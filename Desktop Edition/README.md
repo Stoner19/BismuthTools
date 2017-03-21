@@ -1,6 +1,6 @@
 # Bismuth Tools | Desktop Edition
 
-This folder contains a desktop version of the Bistmuth Tools using Python.
+This folder contains a desktop version of the Bismuth Tools using Python.
 The tool is intended for personal use.
 
 A compiled Windows executable is in releases
