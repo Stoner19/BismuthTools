@@ -31,11 +31,11 @@ Once the update process is complete then click 'Refresh List' to display the new
 
 Version 0.2 Improvements 21/03/2017
 
-Better help menus
-Wallet info auto refresh every 5 mins
-Miner query auto list refresh
-Ledger query, latest block auto refresh every 5 mins
-Basic logging to 'tools.log'
+1. Better help menus
+2. Wallet info auto refresh every 5 mins
+3. Miner query auto list refresh
+4. Ledger query, latest block auto refresh every 5 mins
+5. Basic logging to 'tools.log'
 
 Future Improvements:
 
