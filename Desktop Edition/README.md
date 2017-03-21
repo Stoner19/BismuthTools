@@ -3,6 +3,10 @@
 This folder contains a desktop version of the Bistmuth Tools using Python.
 The tool is intended for personal use.
 
+A compiled Windows executable is in releases
+
+No promises are given that the tools will run on your system
+
 Notes:
 
 1. In order to take into account the use of Hyperblocks technology the query components are only designed to use the last 10000 blocks.
@@ -25,7 +29,18 @@ miners.db
 On first run, if there is no miners.db then a new one will be created.
 Once the update process is complete then click 'Refresh List' to display the new or latest list of miners.
 
+Version 0.2 Improvements 21/03/2017
+
+Better help menus
+Wallet info auto refresh every 5 mins
+Miner query auto list refresh
+Ledger query, latest block auto refresh every 5 mins
+Basic logging to 'tools.log'
+
 Future Improvements:
 
-1. Better menus and menu content
-2. Possibly integrate full wallet and miner functions
+1. Even better menus and menu content
+2. Possibly integrate node and miner functions
+3. Wallet functions
+3. Linux release with executable
+4. Network information

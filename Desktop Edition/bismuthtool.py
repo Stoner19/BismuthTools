@@ -1,5 +1,5 @@
 # Bismuth Query Tools (Desktop Edition)
-# version 0.2-alpha
+# version 0.2
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -17,18 +17,45 @@ import icons
 import hashlib
 import base64
 import pyqrcode
+import logging
 
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA
 
+logging.basicConfig(level=logging.INFO, 
+                    filename='tools.log', # log to this file
+                    format='%(asctime)s %(message)s') # include timestamp
+
+logging.info("logging initiated")				
+					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.2-alpha</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>18th March 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.2 Final</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>21st March 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
+
+w_txt = "<table>"
+w_txt = w_txt + "<tr><td bgcolor='#D0F7C3'>1. Click on a transaction in the list to get more information.</td></tr>"
+w_txt = w_txt + "<tr><td bgcolor='#D0F7C3'>2. Information refreshes every 5 minutes.</td></tr>"
+w_txt = w_txt + "</table>"
+
+l_txt = "<table>"
+l_txt = l_txt + "<tr><td bgcolor='#D0F7C3'>1. Input a block number, wallet address or hash into the text box.</td></tr>"
+l_txt = l_txt + "<tr><td bgcolor='#D0F7C3'>2. Press enter or click submit.</td></tr>"
+l_txt = l_txt + "<tr><td bgcolor='#D0F7C3'>3. Click on a transaction to see more detail.</td></tr>"
+l_txt = l_txt + "<tr><td bgcolor='#D0F7C3'>4. Latest block information refreshes every 5 minutes.</td></tr>"
+l_txt = l_txt + "</table>"
+
+m_txt = "<table>"
+m_txt = m_txt + "<tr><td bgcolor='#D0F7C3'>1. Click on the Miner Query tab to view a list of miners.</td></tr>"
+m_txt = m_txt + "<tr><td bgcolor='#D0F7C3'>2. Miners are ordered by blocks found in last 10000 blocks.</td></tr>"
+m_txt = m_txt + "<tr><td bgcolor='#D0F7C3'>3. Click on a miner to see more detail.</td></tr>"
+m_txt = m_txt + "<tr><td bgcolor='#D0F7C3'>4. The miner data will update every 10 minutes.</td></tr>"
+m_txt = m_txt + "<tr><td bgcolor='#D0F7C3'>5. On first run a miner database will be created</td></tr>"
+m_txt = m_txt + "<tr><td bgcolor='#D0F7C3'>6. Click 'Refresh List' after an update or wait 10 mins for auto-refresh</td></tr>"
+m_txt = m_txt + "</table>"
 
 #//////////////////////////////////////////////////////////
 # Miner database stuff
@@ -49,6 +76,8 @@ def latest():
 	hyper_limit = db_block_height - 10000
 	
 	c.close()
+	
+	logging.info("Latest block queried: " + str(db_block_height))
 
 	return db_block_height, last_block_ago
 
@@ -61,10 +90,11 @@ def zerocheck(zeroaddress):
 	this_count = c.fetchone()[0]
 	c.close()
 	
+	#logging.info("Checked for zero transactions: " + zeroaddress)
+	
 	if this_count > 0:
 		return False
 	else:
-		#print zeroaddress
 		return True
 
 def getvars(myaddress):
@@ -132,6 +162,7 @@ def getvars(myaddress):
 def rebuildme():
 
 	if not os.path.exists('tempminers.db'):
+		logging.info("Miner DB: Rebuild")
 		# create empty miners database
 		minerlist = sqlite3.connect('tempminers.db')
 		minerlist.text_factory = str
@@ -215,6 +246,7 @@ def checkstart():
 
 	if not os.path.exists('miners.db'):
 		# create empty miners database
+		logging.info("Miner DB: Create New as none exisits")
 		minerlist = sqlite3.connect('miners.db')
 		minerlist.text_factory = str
 		m = minerlist.cursor()
@@ -229,6 +261,7 @@ checkstart()
 background_thread = Thread(target=buildminerdb)
 background_thread.daemon = True
 background_thread.start()
+logging.info("Miner DB: Start Thread")
 
 		
 #////////////////////////////////////////////////////////////
@@ -277,7 +310,7 @@ def test(testString):
 
 def miners():
 
-	# Get mining addresses from miners.db
+	logging.info("Miner DB: Get mining addresses from miners.db")
 	conn = sqlite3.connect('miners.db')
 	conn.text_factory = str
 	c = conn.cursor()
@@ -438,15 +471,21 @@ class AboutBoxT(wx.Dialog):
 
 class AboutBox(wx.Dialog):
 	def __init__(self):
-		wx.Dialog.__init__(self, None, -1, "About Bismuth Query Tools",
+		wx.Dialog.__init__(self, None, -1, thistitle,
 			style=wx.DEFAULT_DIALOG_STYLE|wx.THICK_FRAME|wx.RESIZE_BORDER|
 				wx.TAB_TRAVERSAL)
-		hwin = HtmlWindow(self, -1, size=(260,300))
-		aboutText = '<p style="color:#08750A">' + a_txt + '</p>'
+		hwin = HtmlWindow(self, -1, size=(420,300))
+		if thisid == 101:
+			aboutText = '<p style="color:#08750A">' + w_txt + '</p>'
+		elif thisid == 102:
+			aboutText = '<p style="color:#08750A">' + a_txt + '</p>'
+		elif thisid == 103:
+			aboutText = '<p style="color:#08750A">' + l_txt + '</p>'
+		elif thisid == 104:
+			aboutText = '<p style="color:#08750A">' + m_txt + '</p>'
 		hwin.SetPage(aboutText)
-		btn = hwin.FindWindowById(wx.ID_OK)
 		irep = hwin.GetInternalRepresentation()
-		hwin.SetSize((irep.GetWidth()+20, irep.GetHeight()+10))
+		hwin.SetSize((irep.GetWidth()+10, irep.GetHeight()+10))
 		self.SetClientSize(hwin.GetSize())
 		self.CentreOnParent(wx.BOTH)
 		self.SetFocus()
@@ -479,11 +518,11 @@ class PageOne(wx.Window):
 		i.SetSize(i.GetBestSize())
 		box1.Add(i, 0, wx.ALL|wx.CENTER, 5)
 
-		ins1 = wx.StaticText(self, -1, "Tool Usage and Help")
-		ins1.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, underline=True))
-		ins1.SetForegroundColour(wx.BLACK)
+		ins1 = wx.StaticText(self, -1, "Use the window menu above for help")
+		ins1.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL))
+		ins1.SetForegroundColour("#444995")
 		ins1.SetSize(ins1.GetBestSize())
-		box1.Add(ins1, 0, wx.ALL|wx.LEFT, 5)
+		box1.Add(ins1, 0, wx.ALL|wx.CENTER, 5)
 		
 		hyper1 = wx.StaticText(self, -1, "*Note: This tool is now Hyperblocks compliant*")
 		hyper1.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
@@ -496,53 +535,7 @@ class PageOne(wx.Window):
 		hyper2.SetForegroundColour("#444995")
 		hyper2.SetSize(ins1.GetBestSize())
 		box1.Add(hyper2, 0, wx.ALL|wx.CENTER, 5)
-		
-		ins2 = wx.StaticText(self, -1, "Ledger Query:")
-		ins2.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
-		ins2.SetForegroundColour(wx.BLACK)
-		ins2.SetSize(ins2.GetBestSize())
-		box1.Add(ins2, 0, wx.ALL|wx.LEFT, 5)
 
-		ledgertxt = "1. Input a block number, wallet address or hash into the text box, press enter or click submit \n2. Click on a transaction to see more detail."
-		
-		ins3 = wx.StaticText(self, -1, ledgertxt)
-		ins3.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
-		ins3.SetForegroundColour(wx.BLACK)
-		ins3.SetSize(ins3.GetBestSize())
-		box1.Add(ins3, 0, wx.ALL|wx.LEFT, 5)
-		
-		ins4 = wx.StaticText(self, -1, "Miner Query:")
-		ins4.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
-		ins4.SetForegroundColour(wx.BLACK)
-		ins4.SetSize(ins4.GetBestSize())
-		box1.Add(ins4, 0, wx.ALL|wx.LEFT, 5)
-
-		minertxt = "1. Click on the Miner Query tab to view a list of miners ordered by blocks found. \n"
-		minertxt = minertxt + "2. Click on a miner to see more detail. \n"
-		minertxt = minertxt + "3. The miners.db will update every 10 minutes as indicated in the status bar. \n"
-		minertxt = minertxt + "4. When the program is first run the Miner list may be empty. Just wait until the miner.db update is \n"
-		minertxt = minertxt + "   complete and then click the 'Refresh List' button."
-		
-		ins5 = wx.StaticText(self, -1, minertxt)
-		ins5.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
-		ins5.SetForegroundColour(wx.BLACK)
-		ins5.SetSize(ins5.GetBestSize())
-		box1.Add(ins5, 0, wx.ALL|wx.LEFT, 5)
-
-		ins6 = wx.StaticText(self, -1, "Wallet Info:")
-		ins6.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
-		ins6.SetForegroundColour(wx.BLACK)
-		ins6.SetSize(ins6.GetBestSize())
-		box1.Add(ins6, 0, wx.ALL|wx.LEFT, 5)
-
-		walltxt = "1. Click on a transaction in the list to get more information"
-		
-		ins7 = wx.StaticText(self, -1, walltxt)
-		ins7.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
-		ins7.SetForegroundColour(wx.BLACK)
-		ins7.SetSize(ins7.GetBestSize())
-		box1.Add(ins7, 0, wx.ALL|wx.LEFT, 5)
-		
 		self.SetSizer(box1)
 		self.Layout()
 
@@ -551,6 +544,9 @@ class PageTwo(wx.Panel):
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent)
 		
+		self.timer1 = wx.Timer(self)
+		self.Bind(wx.EVT_TIMER, self.update, self.timer1)
+				
 		l_text1 = wx.StaticText(self, -1, "Bismuth Ledger Query Tool")
 		l_text1.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
 		l_text1.SetSize(l_text1.GetBestSize())
@@ -584,10 +580,10 @@ class PageTwo(wx.Panel):
 		hbox3.Add(l_text4, 0, wx.ALL|wx.RIGHT, 2)
 		hbox3.Add(l_submit, 0, wx.ALL|wx.LEFT, 2)
 		
-		mylatest = latest()
+		self.mylatest = latest()
 		
-		self.p2text = "The latest block: " + str(mylatest[0]) + " was found " + str(int(mylatest[1])) + " seconds ago"
-
+		self.p2text = "The latest block: " + str(self.mylatest[0]) + " was found " + str(int(self.mylatest[1])) + " seconds ago"
+		
 		self.l_text5 = wx.StaticText(self, -1, self.p2text)
 		self.l_text5.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		self.l_text5.SetForegroundColour("#08750A")		
@@ -611,8 +607,6 @@ class PageTwo(wx.Panel):
 		self.list_ctrl.InsertColumn(2, 'Amount')
 		self.list_ctrl.InsertColumn(3, 'Reward')
 		
-		#stuff here?
-
 		self.list_ctrl.SetColumnWidth(0, -2)
 		self.list_ctrl.SetColumnWidth(1, -1)
 		self.list_ctrl.SetColumnWidth(2, -2)
@@ -628,9 +622,12 @@ class PageTwo(wx.Panel):
 		self.box2.Add(self.list_ctrl, 0, wx.ALL|wx.EXPAND, 5)
 		
 		self.SetSizer(self.box2)
+		
+		self.timer1.Start(300 * 1000)
 
 	def OnSubmit(self, event):
 		myblock = str(self.lt1.GetValue())
+		logging.info("Ledger: Query for: " + str(myblock))
 		
 		if not myblock: #Nonetype handling - simply replace with "0"
 			myblock = "0"
@@ -726,7 +723,8 @@ class PageTwo(wx.Panel):
 		self.list_ctrl.SetColumnWidth(1, -1)
 		self.list_ctrl.SetColumnWidth(2, -2)
 		self.list_ctrl.SetColumnWidth(3, -2)
-		
+
+	
 	def OnAbout(self, event):
 		l_event = event.GetIndex()
 		l_item1 = self.list_ctrl.GetItem(l_event, 0)
@@ -734,15 +732,27 @@ class PageTwo(wx.Panel):
 		getblock = l_item1.GetText()
 		getamount = l_item2.GetText()
 		gettitle = "Ledger Query Tool | Transaction Details"
+		logging.info("Ledger: Transaction details request")
 
 		if tgetvars(getblock,getamount,gettitle):
 			dlg = AboutBoxT()
 			dlg.ShowModal()
 			dlg.Destroy()
 
+	def update(self, event):
+		self.timer1.Stop()
+		self.mylatest = latest()
+		self.p2text = "The latest block: " + str(self.mylatest[0]) + " was found " + str(int(self.mylatest[1])) + " seconds ago"
+		self.l_text5.SetLabel(self.p2text)
+		logging.info("Ledger: Latest block refresh")
+		self.timer1.Start(300 * 1000)
+
 class PageThree(wx.Panel):
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent)
+
+		self.timer2 = wx.Timer(self)
+		self.Bind(wx.EVT_TIMER, self.OnRefresh, self.timer2)
 		
 		m_text1 = wx.StaticText(self, -1, "Bismuth Miner Query Tool")
 		m_text1.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
@@ -797,6 +807,8 @@ class PageThree(wx.Panel):
 		box3.Add(self.list_ctrl, 0, wx.ALL|wx.EXPAND, 5)
 
 		self.SetSizer(box3)
+	
+		self.timer2.Start(600 * 1000)
 		
 	def MyMiners(self):
 	
@@ -831,13 +843,20 @@ class PageThree(wx.Panel):
 			dlg.Destroy()
 	
 	def OnRefresh(self, event):
+		self.timer2.Stop()
+		logging.info("Miners: Refresh requested")
 		self.list_ctrl.DeleteAllItems()
 		self.MyMiners()
-
+		self.list_ctrl.Refresh()
+		self.timer2.Start(600 * 1000)
+		
 class PageFour(wx.Panel):
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent)
 		
+		self.timer = wx.Timer(self)
+		self.Bind(wx.EVT_TIMER, self.update, self.timer)
+	
 		# import keys
 		if not os.path.exists('privkey_encrypted.der'):
 			key = RSA.importKey(open('privkey.der').read())
@@ -856,17 +875,17 @@ class PageFour(wx.Panel):
 		#public_key_readable = str(key.publickey().exportKey())
 		public_key_readable = open('pubkey.der').read()
 		public_key_hashed = base64.b64encode(public_key_readable)
-		myaddress = hashlib.sha224(public_key_readable).hexdigest()
+		self.myaddress = hashlib.sha224(public_key_readable).hexdigest()
 		#private_key_readable = str(key.exportKey())
 		
-		address_qr = pyqrcode.create(myaddress)
+		address_qr = pyqrcode.create(self.myaddress)
 		address_qr.png('address_qr.png')
 
 		w_text1 = wx.StaticText(self, -1, "Bismuth Wallet Information")
 		w_text1.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
 		w_text1.SetSize(w_text1.GetBestSize())
 		
-		w_text2 = wx.StaticText(self, -1, "Your address: " + myaddress)
+		w_text2 = wx.StaticText(self, -1, "Your address: " + self.myaddress)
 		w_text2.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
 		w_text2.SetSize(w_text2.GetBestSize())
 		
@@ -875,22 +894,21 @@ class PageFour(wx.Panel):
 		w_text3.SetForegroundColour(my_color)
 		w_text3.SetSize(w_text3.GetBestSize())
 		
-		wallet_info = refresh(myaddress)
+		self.list_ctrl = wx.ListCtrl(self, size=(-1,-1),
+						 style=wx.LC_REPORT|wx.LC_NO_HEADER
+						 |wx.BORDER_NONE
+						 )
+		
+		self.list_ctrl.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
+		self.list_ctrl.InsertColumn(1, 'Information', wx.LIST_FORMAT_RIGHT)
+		self.list_ctrl.InsertColumn(2, 'Value')
+
+		wallet_info = refresh(self.myaddress)
 		
 		t_row = ["BALANCE:","Spent Total:","Received Total:","Fees Paid:","Rewards:"]
 		t_data = [wallet_info[4],wallet_info[1],wallet_info[0],wallet_info[3],wallet_info[2]]
 		
 		self.index = 0
-
-		self.list_ctrl = wx.ListCtrl(self, size=(-1,-1),
-						 style=wx.LC_REPORT|wx.LC_NO_HEADER
-						 |wx.BORDER_NONE
-						 )
-		#self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnAbout, self.list_ctrl)
-		
-		self.list_ctrl.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD))
-		self.list_ctrl.InsertColumn(1, 'Information', wx.LIST_FORMAT_RIGHT)
-		self.list_ctrl.InsertColumn(2, 'Value')
 		
 		for items in t_row:
 			temp_row = t_row[self.index]
@@ -926,7 +944,7 @@ class PageFour(wx.Panel):
 		self.list_ctrl1.InsertColumn(3, 'From', wx.LIST_FORMAT_RIGHT)
 		self.list_ctrl1.InsertColumn(4, 'Amount', wx.LIST_FORMAT_RIGHT)
 		
-		w_all = wgetrans(myaddress)
+		w_all = wgetrans(self.myaddress)
 		
 		if w_all[1] == 0:
 			w_text4.SetLabel("No transactions, looks like a new address")
@@ -949,7 +967,6 @@ class PageFour(wx.Panel):
 				else:
 					#print mybacon
 					index = i - 1
-					#self.list_ctrl1.InsertStringItem(index, mybacon[0])
 					self.list_ctrl1.InsertStringItem(index, str(mybacon[4]))
 					self.list_ctrl1.SetStringItem(index, 1, mybacon[0])
 					self.list_ctrl1.SetStringItem(index, 2, mybacon[1])
@@ -982,7 +999,9 @@ class PageFour(wx.Panel):
 		self.box4.Add(self.list_ctrl1, 0, wx.ALL|wx.EXPAND, 2)
 		
 		self.SetSizer(self.box4)
-	
+		
+		self.timer.Start(300 * 1000)
+
 	def OnAbout(self, event):
 		l_event = event.GetIndex()
 		l_item1 = self.list_ctrl1.GetItem(l_event, 0)
@@ -995,32 +1014,116 @@ class PageFour(wx.Panel):
 			dlg = AboutBoxT()
 			dlg.ShowModal()
 			dlg.Destroy()
+	
+	def update(self, event):
+		#print "Updating"
+		self.timer.Stop()
+		logging.info("Wallet: update requested")
+		self.list_ctrl.DeleteAllItems()
 		
+		wallet_info = refresh(self.myaddress)
+		
+		t_row = ["BALANCE:","Spent Total:","Received Total:","Fees Paid:","Rewards:"]
+		t_data = [wallet_info[4],wallet_info[1],wallet_info[0],wallet_info[3],wallet_info[2]]
+		
+		self.index = 0
+		
+		for items in t_row:
+			temp_row = t_row[self.index]
+			temp_data = t_data[self.index]
+			self.list_ctrl.InsertStringItem(self.index, temp_row)
+			self.list_ctrl.SetStringItem(self.index, 1, temp_data)
+			self.list_ctrl.SetItemData(self.index, self.index)
+			self.index += 1
+
+		#str(credit),str(debit),str(rewards),str(fees),str(balance),str(bl_height)
+
+		self.list_ctrl.SetColumnWidth(0, -1)
+		self.list_ctrl.SetColumnWidth(1, -1)
+
+		w_all = wgetrans(self.myaddress)
+		self.list_ctrl1.DeleteAllItems()
+		
+		if w_all[1] == 0:
+			w_text4.SetLabel("No transactions, looks like a new address")
+			w_text4.SetForegroundColour(wx.RED)
+		else:
+			w_trans = w_all[0]
+			w_limit = w_all[1]
+			
+			#build table here
+			
+			k = 0
+			mybacon = []
+			for i in range(w_limit):
+				if i % 2 == 0:
+					color_cell = "wx.WHITE"
+				else:
+					color_cell = "#E8E8E8"
+				if mybacon == []:
+					mybacon = []
+				else:
+					#print mybacon
+					index = i - 1
+					self.list_ctrl1.InsertStringItem(index, str(mybacon[4]))
+					self.list_ctrl1.SetStringItem(index, 1, mybacon[0])
+					self.list_ctrl1.SetStringItem(index, 2, mybacon[1])
+					self.list_ctrl1.SetStringItem(index, 3, mybacon[2])
+					self.list_ctrl1.SetStringItem(index, 4, mybacon[3])
+					self.list_ctrl1.SetItemBackgroundColour(item=index, col=color_cell)
+					self.list_ctrl1.SetItemData(index,index)
+					mybacon = []
+				for j in range(5):			
+										
+					mybacon.append(w_trans[k])
+					k = k + 1
+	
+		self.list_ctrl1.SetColumnWidth(0, 0)
+		self.list_ctrl1.SetColumnWidth(1, -2)
+		self.list_ctrl1.SetColumnWidth(2, 210)
+		self.list_ctrl1.SetColumnWidth(3, 210)
+		self.list_ctrl1.SetColumnWidth(4, 110)
+
+		self.timer.Start(300 * 1000)
+		#print "Updated"
+
 class MainFrame(wx.Frame):
 	def __init__(self):
 		wx.Frame.__init__(self, None, title="Bismuth Tools (Desktop Edition)", pos=(50,50), size=(700,720))
-		
-		if os.path.isfile('bismuthtool.exe'):
-			loc = wx.IconLocation(r'bismuthtool.exe', 0)
-			self.SetIcon(wx.IconFromLocation(loc))
+	
+		loc = icons.bismuthicon.GetIcon()
+		self.SetIcon(loc)
 
 		menubar = wx.MenuBar()
+
+		m_file = wx.Menu()
+		
+		m_exit = m_file.Append(wx.ID_EXIT, '&Quit', 'Quit application')
+		
+		menubar.Append(m_file, '&File')
 		
 		help = wx.Menu()
 		
-		help.Append(101, '&About', 'About this Program')
+		help.Append(101, '&Wallet Info', 'Wallet Information')
+		help.Append(103, '&Ledger Query', 'Ledger Query Help')
+		help.Append(104, '&Miner Query', 'Miner Query Help')
+		help.Append(102, '&About', 'About this Program')
 		
 		menubar.Append(help, '&Help')
-		
+	
 		self.SetMenuBar(menubar)
 		
 		self.Bind(wx.EVT_MENU, self.OnAbout, id=101)
+		self.Bind(wx.EVT_MENU, self.OnAbout, id=103)
+		self.Bind(wx.EVT_MENU, self.OnAbout, id=104)
+		self.Bind(wx.EVT_MENU, self.OnAbout, id=102)
+		self.Bind(wx.EVT_MENU, self.OnQuit, m_exit)
 		
 		global statusbar
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.2-alpha', 0)
+		statusbar.SetStatusText('Version 0.2', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		
@@ -1046,11 +1149,26 @@ class MainFrame(wx.Frame):
 		sizer.Add(self.nb, 1, wx.EXPAND)
 		self.CentreOnParent(wx.BOTH)
 		p.SetSizer(sizer)
-	
+
 	def OnAbout(self, event):
+		global thistitle
+		global thisid
+		thisid = event.Id
+		if thisid == 101:
+			thistitle = "Wallet Information Help"
+		elif thisid == 102:
+			thistitle = "About Bismuth Tools"
+		elif thisid == 103:
+			thistitle = "Ledger Query Help"
+		elif thisid == 104:
+			thistitle = "Miner Query Help"
 		dlg = AboutBox()
 		dlg.ShowModal()
 		dlg.Destroy()
+    
+	def OnQuit(self, event):
+		logging.info("App: Quit")
+		self.Close()
 
 if __name__ == "__main__":
     app = wx.App()
