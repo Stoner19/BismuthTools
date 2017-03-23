@@ -86,7 +86,7 @@ def zerocheck(zeroaddress):
 	conn = sqlite3.connect('static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
-	c.execute("SELECT count(*) FROM transactions WHERE address = ? AND (reward = 10 or 25);",(zeroaddress,))
+	c.execute("SELECT count(*) FROM transactions WHERE address = ? AND (reward != 0);",(zeroaddress,))
 	this_count = c.fetchone()[0]
 	c.close()
 	
@@ -105,7 +105,7 @@ def getvars(myaddress):
 	
 	c.execute("SELECT sum(reward) FROM transactions WHERE address = ?;",(myaddress,))
 	r_sum = c.fetchone()[0]
-	c.execute("SELECT count(*) FROM transactions WHERE address = ? AND (reward = 10 or 25);",(myaddress,))
+	c.execute("SELECT count(*) FROM transactions WHERE address = ? AND (reward != 0);",(myaddress,))
 	b_count = c.fetchone()[0]
 	c.execute("SELECT MAX(block_height) FROM transactions WHERE recipient = ?;",(myaddress,))
 	b_max = c.fetchone()[0]
@@ -125,7 +125,7 @@ def getvars(myaddress):
 	else:
 		conn = sqlite3.connect('static/ledger.db')
 		c = conn.cursor()
-		c.execute("SELECT timestamp FROM transactions WHERE block_height BETWEEN ? and ? AND recipient = ? AND (reward = 10 or 25) ORDER BY block_height ASC;", (hyper_limit,b_max,myaddress))
+		c.execute("SELECT timestamp FROM transactions WHERE block_height BETWEEN ? and ? AND recipient = ? AND (reward != 0) ORDER BY block_height ASC;", (hyper_limit,b_max,myaddress))
 		timeall = c.fetchall()
 		c.close()
 		
@@ -190,7 +190,7 @@ def rebuildme():
 	conn = sqlite3.connect('static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
-	c.execute("SELECT distinct recipient FROM transactions WHERE reward = 10 or 25;")
+	c.execute("SELECT distinct recipient FROM transactions WHERE reward != 0;")
 	miner_list_raw = c.fetchall()
 	c.close()
 
