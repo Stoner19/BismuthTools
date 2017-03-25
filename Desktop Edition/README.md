@@ -37,10 +37,18 @@ Version 0.2 Improvements 21/03/2017
 4. Ledger query, latest block auto refresh every 5 mins
 5. Basic logging to 'tools.log'
 
+Version 0.21 Changes 24/03/2017
+
+1. Incorporate Hclivess pull request
+2. Code changes and bug fixes
+3. New feature: Miner name registration - see your name instead of address in Miner Query - more information in Name.md
+
+Note: Make sure you delete your existing miner.db file before you run this update of the tool (or overwrite it with the one provided)
+
 Future Improvements:
 
 1. Even better menus and menu content
 2. Possibly integrate node and miner functions
 3. Wallet functions
-3. Linux release with executable
-4. Network information
+4. Linux release with executable
+5. Network information

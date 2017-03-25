@@ -1,5 +1,5 @@
 # Bismuth Query Tools (Desktop Edition)
-# version 0.2
+# version 0.21
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -30,9 +30,9 @@ logging.basicConfig(level=logging.INFO,
 logging.info("logging initiated")				
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.2 Final</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.21</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>21st March 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>24th March 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -57,9 +57,56 @@ m_txt = m_txt + "<tr><td bgcolor='#D0F7C3'>5. On first run a miner database will
 m_txt = m_txt + "<tr><td bgcolor='#D0F7C3'>6. Click 'Refresh List' after an update or wait 10 mins for auto-refresh</td></tr>"
 m_txt = m_txt + "</table>"
 
-#//////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////
 # Miner database stuff
-#//////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////
+
+def i_am_first(my_first,the_address):
+
+	conn = sqlite3.connect('static/ledger.db')
+	conn.text_factory = str
+	c = conn.cursor()
+	c.execute("SELECT MIN(block_height) FROM transactions WHERE openfield = ?;",(my_first,))
+	test_min = c.fetchone()[0]
+	c.execute("SELECT * FROM transactions WHERE block_height = ? and openfield = ?;",(test_min,my_first))
+	test_me = c.fetchone()[2]
+	c.close()
+	
+	# print str(the_address) + " | " + str(test_me)
+	
+	if the_address == test_me:
+		return True
+	else:
+		return False
+
+def checkmyname(myaddress):
+	conn = sqlite3.connect('static/ledger.db')
+	conn.text_factory = str
+	c = conn.cursor()
+	c.execute("SELECT * FROM transactions WHERE address = ? AND recipient = ? AND amount > ? ORDER BY block_height ASC;",(myaddress,myaddress,"1"))
+	namelist = c.fetchall()
+	c.close()
+	
+	goodname = ""
+
+	for x in namelist:
+		tempfield = str(x[11])
+		
+		if tempfield == "reward" or "":
+			goodname = ""
+		else:
+			tempfield = base64.b64decode(tempfield)
+			if "Minername=" in tempfield:
+				if i_am_first(base64.b64encode(tempfield),x[2]):
+					duff = tempfield.split("=")
+					goodname = str(duff[1])
+				else:
+					goodname = ""
+			else:
+				goodname = ""
+
+	logging.info("Checkname result: Address " + str(myaddress) + " = " + goodname)
+	return goodname
 
 def latest():
 
@@ -68,16 +115,26 @@ def latest():
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE reward != ? ORDER BY block_height DESC LIMIT 1;", ('0',)) #or it takes the first
 	result = c.fetchall()
+	c.close()
 	db_timestamp_last = result[0][1]
 	db_block_height = result[0][0]
 	time_now = str(time.time())
 	last_block_ago = float(time_now) - float(db_timestamp_last)
-	global hyper_limit
-	hyper_limit = db_block_height - 10000
 	
-	c.close()
+	global hyper_limit
+	
+	conn = sqlite3.connect('static/ledger.db')
+	conn.text_factory = str
+	c = conn.cursor()
+	c.execute("SELECT * FROM transactions WHERE address = ? ORDER BY block_height DESC LIMIT 1;", ('Hyperblock',)) #or it takes the first
+	hyper_result = c.fetchall()
+	
+	c.close()	
+	
+	hyper_limit = (hyper_result[0][0]) + 1
 	
 	logging.info("Latest block queried: " + str(db_block_height))
+	logging.info("Hyper_Limit is: " + str(hyper_limit))
 
 	return db_block_height, last_block_ago
 
@@ -168,7 +225,7 @@ def rebuildme():
 		minerlist.text_factory = str
 		m = minerlist.cursor()
 		m.execute(
-			"CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy)")
+			"CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy, mname)")
 		minerlist.commit()
 		minerlist.close()
 		statusbar.SetStatusText("Creating or updating miners database", 2)
@@ -190,7 +247,7 @@ def rebuildme():
 	conn = sqlite3.connect('static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
-	c.execute("SELECT distinct recipient FROM transactions WHERE reward != 0;")
+	c.execute("SELECT distinct recipient FROM transactions WHERE block_height > ? AND reward != 0;",(hyper_limit,))
 	miner_list_raw = c.fetchall()
 	c.close()
 
@@ -207,7 +264,8 @@ def rebuildme():
 		if len(temp_miner) == 56:
 			if not zerocheck(temp_miner):
 				m_info = getvars(temp_miner)
-				temp_result.append((temp_miner, m_info[0], m_info[1], m_info[2], m_info[3], m_info[4], m_info[5], m_info[6]))
+				m_name = checkmyname(temp_miner)
+				temp_result.append((temp_miner, m_info[0], m_info[1], m_info[2], m_info[3], m_info[4], m_info[5], m_info[6], m_name))
 
 	statusbar.SetStatusText("Inserting information into database.....", 2)
 			
@@ -217,8 +275,7 @@ def rebuildme():
 
 	for y in temp_result:
 
-		#print "Inserting: " + str(y[0]) + " ......."
-		c.execute('INSERT INTO minerlist VALUES (?,?,?,?,?,?,?,?)', (y[0],y[1],y[2],y[3],y[4],y[5],y[6],y[7]))
+		c.execute('INSERT INTO minerlist VALUES (?,?,?,?,?,?,?,?,?)', (y[0],y[1],y[2],y[3],y[4],y[5],y[6],y[7],y[8]))
 
 	conn.commit()
 	c.close()
@@ -251,7 +308,7 @@ def checkstart():
 		minerlist.text_factory = str
 		m = minerlist.cursor()
 		m.execute(
-			"CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy)")
+			"CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy, mname)")
 		minerlist.commit()
 		minerlist.close()
 		# create empty minerlist
@@ -773,9 +830,10 @@ class PageThree(wx.Panel):
 						 )
 		self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnAbout, self.list_ctrl)
 		self.list_ctrl.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
-		self.list_ctrl.InsertColumn(0, 'Address')
-		self.list_ctrl.InsertColumn(1, 'Blocks Found')
-		self.list_ctrl.InsertColumn(2, 'Rank')
+		self.list_ctrl.InsertColumn(0, 'Haddress')
+		self.list_ctrl.InsertColumn(1, 'Address')
+		self.list_ctrl.InsertColumn(2, 'Blocks Found')
+		self.list_ctrl.InsertColumn(3, 'Rank')
 		
 		items = miners()
 		index = 0
@@ -783,22 +841,29 @@ class PageThree(wx.Panel):
 		
 		for data in items:
 			thisminer = str(data[0])
+			thisname = ""
 			if len(thisminer) == 56:
 				if rank % 2 == 0:
 					color_cell = "wx.WHITE"
 				else:
 					color_cell = "#E8E8E8"
 				self.list_ctrl.InsertStringItem(index, thisminer)
-				self.list_ctrl.SetStringItem(index, 1, str(data[3]))
-				self.list_ctrl.SetStringItem(index, 2, str(rank))
+				if str(data[8]) == "":
+					thisname = thisminer
+				else:
+					thisname = str(data[8])
+				self.list_ctrl.SetStringItem(index, 1, thisname)
+				self.list_ctrl.SetStringItem(index, 2, str(data[3]))
+				self.list_ctrl.SetStringItem(index, 3, str(rank))
 				self.list_ctrl.SetItemBackgroundColour(item=index, col=color_cell)
 				self.list_ctrl.SetItemData(index, index)
 				index += 1
 				rank +=1
 		
-		self.list_ctrl.SetColumnWidth(0, -1)
-		self.list_ctrl.SetColumnWidth(1, -2)
+		self.list_ctrl.SetColumnWidth(0, 0)
+		self.list_ctrl.SetColumnWidth(1, -1)
 		self.list_ctrl.SetColumnWidth(2, -2)
+		self.list_ctrl.SetColumnWidth(3, -2)
 		
 		box3 = wx.BoxSizer(wx.VERTICAL)
 		box3.Add(m_text1, 0, wx.ALL|wx.CENTER, 5)
@@ -824,15 +889,21 @@ class PageThree(wx.Panel):
 				else:
 					color_cell = "#E8E8E8"
 				self.list_ctrl.InsertStringItem(index, thisminer)
-				self.list_ctrl.SetStringItem(index, 1, str(data[3]))
-				self.list_ctrl.SetStringItem(index, 2, str(rank))
+				if str(data[8]) == "":
+					thisname = thisminer
+				else:
+					thisname = str(data[8])
+				self.list_ctrl.SetStringItem(index, 1, thisname)
+				self.list_ctrl.SetStringItem(index, 2, str(data[3]))
+				self.list_ctrl.SetStringItem(index, 3, str(rank))
 				self.list_ctrl.SetItemBackgroundColour(item=index, col=color_cell)
 				self.list_ctrl.SetItemData(index, index)
 				index += 1
 				rank +=1
-		self.list_ctrl.SetColumnWidth(0, -1)
-		self.list_ctrl.SetColumnWidth(1, -2)
+		self.list_ctrl.SetColumnWidth(0, 0)
+		self.list_ctrl.SetColumnWidth(1, -1)
 		self.list_ctrl.SetColumnWidth(2, -2)
+		self.list_ctrl.SetColumnWidth(3, -2)
 	
 	def OnAbout(self, event):
 		SelectedRow = event.GetText()
@@ -1123,7 +1194,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.2', 0)
+		statusbar.SetStatusText('Version 0.21', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		
