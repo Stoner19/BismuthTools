@@ -1,5 +1,5 @@
-# Bismuth Query Tools (Desktop Edition)
-# version 0.21
+# Bismuth Tools
+# version 0.30
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -13,11 +13,13 @@ from datetime import datetime
 import os
 import sys
 from threading import Thread
-import icons
+import ticons
 import hashlib
 import base64
 import pyqrcode
 import logging
+
+import  wx.lib.newevent
 
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
@@ -27,12 +29,18 @@ logging.basicConfig(level=logging.INFO,
                     filename='tools.log', # log to this file
                     format='%(asctime)s %(message)s') # include timestamp
 
-logging.info("logging initiated")				
+logging.info("logging initiated")
+
+(UpdateStatusEvent, EVT_UPDATE_STATUSBAR) = wx.lib.newevent.NewEvent()
+
+def updatestatus(newstatus,newplace):
+	evt = UpdateStatusEvent(msg = newstatus, st_id = int(newplace))
+	wx.PostEvent(statusbar,evt)
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.21</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.30</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>24th March 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>27th March 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -72,7 +80,7 @@ def i_am_first(my_first,the_address):
 	test_me = c.fetchone()[2]
 	c.close()
 	
-	# print str(the_address) + " | " + str(test_me)
+	#print str(the_address) + " | " + str(test_me)
 	
 	if the_address == test_me:
 		return True
@@ -102,10 +110,9 @@ def checkmyname(myaddress):
 					goodname = str(duff[1])
 				else:
 					goodname = ""
-			else:
-				goodname = ""
 
 	logging.info("Checkname result: Address " + str(myaddress) + " = " + goodname)
+	
 	return goodname
 
 def latest():
@@ -126,7 +133,7 @@ def latest():
 	conn = sqlite3.connect('static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
-	c.execute("SELECT * FROM transactions WHERE address = ? ORDER BY block_height DESC LIMIT 1;", ('Hyperblock',)) #or it takes the first
+	c.execute("SELECT * FROM transactions WHERE address = ? OR ? ORDER BY block_height DESC LIMIT 1;", ('Hypoblock','Hyperblock')) #or it takes the first
 	hyper_result = c.fetchall()
 	
 	c.close()	
@@ -224,11 +231,10 @@ def rebuildme():
 		minerlist = sqlite3.connect('tempminers.db')
 		minerlist.text_factory = str
 		m = minerlist.cursor()
-		m.execute(
-			"CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy, mname)")
+		m.execute("CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy, mname)")
 		minerlist.commit()
 		minerlist.close()
-		statusbar.SetStatusText("Creating or updating miners database", 2)
+		logging.info("Creating or updating miners database")
 		# create empty minerlist
 	else:
 		# create empty miners database
@@ -238,10 +244,11 @@ def rebuildme():
 		m.execute("DELETE FROM minerlist")
 		minerlist.commit()
 		minerlist.close()
-		statusbar.SetStatusText("Cleaned old data in miners database", 2)
+		logging.info("Cleaned old data in miners database")
 		# create empty minerlist
 		
-	statusbar.SetStatusText("Getting up to date list of miners.....", 2)
+	updatestatus("Getting up to date list of miners.....", 2)
+	time.sleep(2)
 
 	# Get mining addresses from ledgerdb
 	conn = sqlite3.connect('static/ledger.db')
@@ -255,8 +262,7 @@ def rebuildme():
 	
 	# Validate miner address and get info from ledgerdb
 
-	statusbar.SetStatusText("Getting new data.....please wait this may take some time!", 2)
-	
+	updatestatus("Getting new data.....please wait this may take some time!", 2)
 	
 	for x in miner_list_raw:
 		
@@ -267,7 +273,8 @@ def rebuildme():
 				m_name = checkmyname(temp_miner)
 				temp_result.append((temp_miner, m_info[0], m_info[1], m_info[2], m_info[3], m_info[4], m_info[5], m_info[6], m_name))
 
-	statusbar.SetStatusText("Inserting information into database.....", 2)
+	updatestatus("Inserting information into database.....", 2)
+	time.sleep(2)
 			
 	conn = sqlite3.connect('tempminers.db')
 	conn.text_factory = str
@@ -284,9 +291,8 @@ def rebuildme():
 	if os.path.isfile('miners.db'):
 		os.remove('miners.db')
 	os.rename('tempminers.db','miners.db')
-
-	statusbar.SetStatusText("Done !", 2)
-	time.sleep(5)
+	updatestatus("Done !", 2)
+	time.sleep(2)
 	return True
 
 def buildminerdb():
@@ -295,7 +301,7 @@ def buildminerdb():
 	#bobble = True
 
 	while bobble:
-		statusbar.SetStatusText("Waiting for 10 minutes.......", 2)
+		updatestatus("Waiting for 10 minutes.......", 2)
 		time.sleep(600)
 		bobble = rebuildme()
 
@@ -556,14 +562,14 @@ class PageOne(wx.Window):
 		
 		topbox1 = wx.BoxSizer(wx.HORIZONTAL) # logo
 		
-		t = wx.StaticText(self, -1, "Welcome to the Bismuth Tools Application")
-		self.SetBackgroundColour(wx.WHITE)
+		t = wx.StaticText(self, -1, "Welcome to Bismuth Tools")
+		self.SetBackgroundColour("#FFFFFF")
 		t.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
 		t.SetForegroundColour("#444995")
 		t.SetSize(t.GetBestSize())
 		topbox1.Add(t, 0, wx.ALL|wx.CENTER, 10)
 				
-		logo = icons.bismuthlogo.GetBitmap()
+		logo = ticons.bismuthlogo.GetBitmap()
 		self.image1 = wx.StaticBitmap(self, -1, logo)
 		topbox1.Add(self.image1, 0, wx.ALL|wx.RIGHT, 10)
 		
@@ -587,7 +593,7 @@ class PageOne(wx.Window):
 		hyper1.SetSize(ins1.GetBestSize())
 		box1.Add(hyper1, 0, wx.ALL|wx.CENTER, 5)
 		
-		hyper2 = wx.StaticText(self, -1, "Query information is restricted to the latest 10,000 blocks")
+		hyper2 = wx.StaticText(self, -1, "Query information may be limited to blocks after the latest hyperblock in the ledger")
 		hyper2.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		hyper2.SetForegroundColour("#444995")
 		hyper2.SetSize(ins1.GetBestSize())
@@ -639,7 +645,8 @@ class PageTwo(wx.Panel):
 		
 		self.mylatest = latest()
 		
-		self.p2text = "The latest block: " + str(self.mylatest[0]) + " was found " + str(int(self.mylatest[1])) + " seconds ago"
+		self.p2text = "The latest block: " + str(self.mylatest[0]) + " was found " + str(int(self.mylatest[1])) + " seconds ago\n"
+		self.p2text = self.p2text + "The latest Hyperblock is at block number: " + str(hyper_limit -1)
 		
 		self.l_text5 = wx.StaticText(self, -1, self.p2text)
 		self.l_text5.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
@@ -670,13 +677,13 @@ class PageTwo(wx.Panel):
 		self.list_ctrl.SetColumnWidth(3, -2)		
 		
 		self.box2 = wx.BoxSizer(wx.VERTICAL)
-		self.box2.Add(l_text1, 0, wx.ALL|wx.CENTER, 5)
+		self.box2.Add(l_text1, 0, wx.ALL|wx.CENTER, 2)
 		self.box2.Add(l_text2, 0, wx.ALL|wx.CENTER, 2)
 		self.box2.Add(hbox2, 0, wx.ALL|wx.LEFT, 2)
 		self.box2.Add(hbox3, 0, wx.ALL|wx.LEFT, 2)
 		self.box2.Add(self.l_text5, 0, wx.ALL|wx.CENTER, 2)
 		self.box2.Add(self.l_text6, 0, wx.ALL|wx.CENTER, 2)
-		self.box2.Add(self.list_ctrl, 0, wx.ALL|wx.EXPAND, 5)
+		self.box2.Add(self.list_ctrl, 0, wx.ALL|wx.EXPAND, 2)
 		
 		self.SetSizer(self.box2)
 		
@@ -767,7 +774,7 @@ class PageTwo(wx.Panel):
 			if index % 2 == 0:
 				color_cell = "#E8E8E8"
 			else:
-				color_cell = "wx.WHITE"
+				color_cell = ""#FFFFFF""
 			self.list_ctrl.InsertStringItem(index, str(data[0]))
 			self.list_ctrl.SetStringItem(index, 1, str(data[3]))
 			self.list_ctrl.SetStringItem(index, 2, str(data[4]))
@@ -844,7 +851,7 @@ class PageThree(wx.Panel):
 			thisname = ""
 			if len(thisminer) == 56:
 				if rank % 2 == 0:
-					color_cell = "wx.WHITE"
+					color_cell = ""#FFFFFF""
 				else:
 					color_cell = "#E8E8E8"
 				self.list_ctrl.InsertStringItem(index, thisminer)
@@ -885,7 +892,7 @@ class PageThree(wx.Panel):
 			thisminer = str(data[0])
 			if len(thisminer) == 56:
 				if rank % 2 == 0:
-					color_cell = "wx.WHITE"
+					color_cell = ""#FFFFFF""
 				else:
 					color_cell = "#E8E8E8"
 				self.list_ctrl.InsertStringItem(index, thisminer)
@@ -1030,7 +1037,7 @@ class PageFour(wx.Panel):
 			mybacon = []
 			for i in range(w_limit):
 				if i % 2 == 0:
-					color_cell = "wx.WHITE"
+					color_cell = ""#FFFFFF""
 				else:
 					color_cell = "#E8E8E8"
 				if mybacon == []:
@@ -1128,7 +1135,7 @@ class PageFour(wx.Panel):
 			mybacon = []
 			for i in range(w_limit):
 				if i % 2 == 0:
-					color_cell = "wx.WHITE"
+					color_cell = ""#FFFFFF""
 				else:
 					color_cell = "#E8E8E8"
 				if mybacon == []:
@@ -1160,9 +1167,9 @@ class PageFour(wx.Panel):
 
 class MainFrame(wx.Frame):
 	def __init__(self):
-		wx.Frame.__init__(self, None, title="Bismuth Tools (Desktop Edition)", pos=(50,50), size=(700,720))
+		wx.Frame.__init__(self, None, title="Bismuth Tools", pos=(50,50), size=(700,720))
 	
-		loc = icons.bismuthicon.GetIcon()
+		loc = ticons.bismuthicon.GetIcon()
 		self.SetIcon(loc)
 
 		menubar = wx.MenuBar()
@@ -1194,7 +1201,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.21', 0)
+		statusbar.SetStatusText('Version 0.30', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		
@@ -1221,6 +1228,8 @@ class MainFrame(wx.Frame):
 		self.CentreOnParent(wx.BOTH)
 		p.SetSizer(sizer)
 
+		statusbar.Bind(EVT_UPDATE_STATUSBAR, self.OnStatus)
+
 	def OnAbout(self, event):
 		global thistitle
 		global thisid
@@ -1236,6 +1245,14 @@ class MainFrame(wx.Frame):
 		dlg = AboutBox()
 		dlg.ShowModal()
 		dlg.Destroy()
+	
+	def updateStatus(self, msg):
+		mystatus = msg
+		statusbar.SetStatusText(mystatus, 2)
+
+	def OnStatus(self, evt):
+		statusbar.SetStatusText(evt.msg, evt.st_id)			
+	
     
 	def OnQuit(self, event):
 		logging.info("App: Quit")
