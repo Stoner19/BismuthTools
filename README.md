@@ -33,7 +33,7 @@ Linux e.g. Ubuntu 16.04 LTS
 
 File placement
 
-The files should be placed in the /bismuth folder on your Windows installation folder. They could possibly be placed elsewhere but I haven't tested this yet. 
+The files should be placed in the /bismuth folder on your installation folder. They could possibly be placed elsewhere but I haven't tested this yet. 
 
 miners.db
 
