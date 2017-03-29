@@ -1,5 +1,5 @@
 # Bismuth Tools
-# version 0.30
+# version 0.31
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -38,9 +38,9 @@ def updatestatus(newstatus,newplace):
 	wx.PostEvent(statusbar,evt)
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.30</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.31</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>27th March 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>29th March 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -133,7 +133,7 @@ def latest():
 	conn = sqlite3.connect('static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
-	c.execute("SELECT * FROM transactions WHERE address = ? OR ? ORDER BY block_height DESC LIMIT 1;", ('Hypoblock','Hyperblock')) #or it takes the first
+	c.execute("SELECT * FROM transactions WHERE address = ? OR address = ? ORDER BY block_height DESC LIMIT 1;", ('Hypoblock','Hyperblock')) #or it takes the first
 	hyper_result = c.fetchall()
 	
 	c.close()	
@@ -1201,7 +1201,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.30', 0)
+		statusbar.SetStatusText('Version 0.31', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		

@@ -64,6 +64,13 @@ Version 0.3 Changes 27/03/2017
 
 Note: Make sure you delete your existing miner.db file before you run this update of the tool (or overwrite it with the one provided)
 
+Version 0.31 Changes 29/03/2017
+
+1. Bug fix in miners.db rebuild
+2. Windows executable file information via version.txt
+
+Note: Make sure you delete your existing miner.db file before you run this update of the tool (or overwrite it with the one provided)
+
 Future Improvements:
 
 1. Even better menus and menu content
