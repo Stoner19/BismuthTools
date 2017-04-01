@@ -1,5 +1,5 @@
 # Bismuth Tools Web Edition
-# version 0.31_Web
+# version 0.32_Web
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -58,7 +58,10 @@ def checkmyname(myaddress):
 		if tempfield == "reward" or "":
 			goodname = ""
 		else:
-			tempfield = base64.b64decode(tempfield)
+			try:
+				tempfield = base64.b64decode(tempfield)
+			except:
+				pass
 			if "Minername=" in tempfield:
 				if i_am_first(base64.b64encode(tempfield),x[2]):
 					duff = tempfield.split("=")

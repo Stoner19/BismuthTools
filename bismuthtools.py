@@ -1,5 +1,5 @@
 # Bismuth Tools
-# version 0.31
+# version 0.32
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -38,9 +38,9 @@ def updatestatus(newstatus,newplace):
 	wx.PostEvent(statusbar,evt)
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.31</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.32</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>29th March 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>1st April 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -103,7 +103,10 @@ def checkmyname(myaddress):
 		if tempfield == "reward" or "":
 			goodname = ""
 		else:
-			tempfield = base64.b64decode(tempfield)
+			try:
+				tempfield = base64.b64decode(tempfield)
+			except:
+				pass
 			if "Minername=" in tempfield:
 				if i_am_first(base64.b64encode(tempfield),x[2]):
 					duff = tempfield.split("=")
@@ -225,27 +228,23 @@ def getvars(myaddress):
 
 def rebuildme():
 
-	if not os.path.exists('tempminers.db'):
-		logging.info("Miner DB: Rebuild")
-		# create empty miners database
-		minerlist = sqlite3.connect('tempminers.db')
-		minerlist.text_factory = str
-		m = minerlist.cursor()
-		m.execute("CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy, mname)")
-		minerlist.commit()
-		minerlist.close()
-		logging.info("Creating or updating miners database")
-		# create empty minerlist
-	else:
-		# create empty miners database
-		minerlist = sqlite3.connect('tempminers.db')
-		minerlist.text_factory = str
-		m = minerlist.cursor()
-		m.execute("DELETE FROM minerlist")
-		minerlist.commit()
-		minerlist.close()
-		logging.info("Cleaned old data in miners database")
-		# create empty minerlist
+	# tidy up
+	
+	if os.path.isfile('tempminers.db'):
+		os.remove('tempminers.db')
+	
+	logging.info("Miner DB: Rebuild")
+	# create empty miners database
+	minerlist = sqlite3.connect('tempminers.db')
+	minerlist.text_factory = str
+	m = minerlist.cursor()
+	m.execute("CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy, mname)")
+	minerlist.commit()
+	minerlist.close()
+	logging.info("Miner DB: Creating or updating miners database")
+	# create empty minerlist
+		
+	logging.info("Miner DB: Getting up to date list of miners.....")
 		
 	updatestatus("Getting up to date list of miners.....", 2)
 	time.sleep(2)
@@ -1201,7 +1200,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.31', 0)
+		statusbar.SetStatusText('Version 0.32', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		

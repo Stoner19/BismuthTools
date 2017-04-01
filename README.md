@@ -73,6 +73,13 @@ Version 0.31 Changes 29/03/2017
 
 Note: Make sure you delete your existing miner.db file before you run this update of the tool (or overwrite it with the one provided)
 
+Version 0.32 Changes 01/04/2017
+
+1. Bug fix in miners.db rebuild
+2. Bug fix in miner naming process
+
+Note: Make sure you delete your existing miner.db file before you run this update of the tool
+
 Future Improvements:
 
 1. Even better menus and menu content
