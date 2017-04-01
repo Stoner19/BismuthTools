@@ -180,27 +180,21 @@ def getvars(myaddress):
 
 def rebuildme():
 
-	if not os.path.exists('tempminers.db'):
-		logging.info("Miner DB: Rebuild")
-		# create empty miners database
-		minerlist = sqlite3.connect('tempminers.db')
-		minerlist.text_factory = str
-		m = minerlist.cursor()
-		m.execute("CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy, mname)")
-		minerlist.commit()
-		minerlist.close()
-		logging.info("Miner DB: Creating or updating miners database")
-		# create empty minerlist
-	else:
-		# create empty miners database
-		minerlist = sqlite3.connect('tempminers.db')
-		minerlist.text_factory = str
-		m = minerlist.cursor()
-		m.execute("DELETE FROM minerlist")
-		minerlist.commit()
-		minerlist.close()
-		logging.info("Miner DB: Cleaned old data in miners database")
-		# create empty minerlist
+	# tidy up
+	
+	if os.path.isfile('tempminers.db'):
+		os.remove('tempminers.db')
+	
+	logging.info("Miner DB: Rebuild")
+	# create empty miners database
+	minerlist = sqlite3.connect('tempminers.db')
+	minerlist.text_factory = str
+	m = minerlist.cursor()
+	m.execute("CREATE TABLE IF NOT EXISTS minerlist (address, blatest, bfirst, blockcount, minerfor, bday, treward, tenergy, mname)")
+	minerlist.commit()
+	minerlist.close()
+	logging.info("Miner DB: Creating or updating miners database")
+	# create empty minerlist
 		
 	logging.info("Miner DB: Getting up to date list of miners.....")
 
