@@ -1,5 +1,5 @@
 # Bismuth Tools Web Edition
-# version 0.32_Web
+# version 0.40_Web
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -26,7 +26,7 @@ logging.info("logging initiated")
 
 def i_am_first(my_first,the_address):
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT MIN(block_height) FROM transactions WHERE openfield = ?;",(my_first,))
@@ -43,7 +43,7 @@ def i_am_first(my_first,the_address):
 		return False
 
 def checkmyname(myaddress):
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE address = ? AND recipient = ? AND amount > ? ORDER BY block_height ASC;",(myaddress,myaddress,"1"))
@@ -59,11 +59,17 @@ def checkmyname(myaddress):
 			goodname = ""
 		else:
 			try:
-				tempfield = base64.b64decode(tempfield)
+				newfield = base64.b64decode(tempfield)
 			except:
 				pass
+			if "Minername=" in newfield:
+				if i_am_first(base64.b64encode(newfield),x[2]):
+					duff = newfield.split("=")
+					goodname = str(duff[1])
+				else:
+					goodname = ""
 			if "Minername=" in tempfield:
-				if i_am_first(base64.b64encode(tempfield),x[2]):
+				if i_am_first(tempfield,x[2]):
 					duff = tempfield.split("=")
 					goodname = str(duff[1])
 				else:
@@ -75,7 +81,7 @@ def checkmyname(myaddress):
 
 def latest():
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE reward != ? ORDER BY block_height DESC LIMIT 1;", ('0',)) #or it takes the first
@@ -88,7 +94,7 @@ def latest():
 	
 	global hyper_limit
 	
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE address = ? OR address = ? ORDER BY block_height DESC LIMIT 1;", ('Hypoblock','Hyperblock')) #or it takes the first
@@ -105,7 +111,7 @@ def latest():
 
 def zerocheck(zeroaddress):
 	
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT count(*) FROM transactions WHERE address = ? AND (reward != 0);",(zeroaddress,))
@@ -121,7 +127,7 @@ def zerocheck(zeroaddress):
 
 def getvars(myaddress):
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	
@@ -145,7 +151,7 @@ def getvars(myaddress):
 		b_perday = 0
 		c_power = 0.01
 	else:
-		conn = sqlite3.connect('static/ledger.db')
+		conn = sqlite3.connect('../static/ledger.db')
 		c = conn.cursor()
 		c.execute("SELECT timestamp FROM transactions WHERE block_height BETWEEN ? and ? AND recipient = ? AND (reward != 0) ORDER BY block_height ASC;", (hyper_limit,b_max,myaddress))
 		timeall = c.fetchall()
@@ -202,7 +208,7 @@ def rebuildme():
 	logging.info("Miner DB: Getting up to date list of miners.....")
 
 	# Get mining addresses from ledgerdb
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT distinct recipient FROM transactions WHERE block_height > ? AND reward != 0;",(hyper_limit,))
@@ -280,7 +286,7 @@ logging.info("Miner DB: Start Thread")
 
 def getall():
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions ORDER BY block_height DESC, timestamp DESC LIMIT 15;")
 
@@ -289,7 +295,7 @@ def getall():
 	return myall
 
 def refresh(testAddress):
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT sum(amount) FROM transactions WHERE recipient = ?;",(testAddress,))
@@ -593,7 +599,7 @@ class ledgerquery:
 				extext = "<p style='color:#08750A';>ADDRESS FOUND | Credits: " + myxtions[0] + " | Debits: " + myxtions[1] + " | Rewards: " + myxtions[2] + " |"
 				extext = extext + " Fees: " + myxtions[3] + " | BALANCE: " + myxtions[4] + "</p>"
 				
-				conn = sqlite3.connect('static/ledger.db')
+				conn = sqlite3.connect('../static/ledger.db')
 				c = conn.cursor()
 				c.execute("SELECT * FROM transactions WHERE address = ? OR recipient = ? ORDER BY block_height DESC;", (str(myblock),str(myblock)))
 
@@ -603,7 +609,7 @@ class ledgerquery:
 			
 			else:
 
-				conn = sqlite3.connect('static/ledger.db')
+				conn = sqlite3.connect('../static/ledger.db')
 				c = conn.cursor()
 				c.execute("SELECT * FROM transactions WHERE block_hash = ?;", (str(myblock),))
 
@@ -618,14 +624,20 @@ class ledgerquery:
 		
 		if my_type == 2:
 		
-			conn = sqlite3.connect('static/ledger.db')
-			c = conn.cursor()
-			c.execute("SELECT * FROM transactions WHERE block_height = ?;", (myblock,))
-
-			all = c.fetchall()
-			#print all
+			if myblock == "0":
 			
-			c.close()
+				all = []
+			
+			else:
+			
+				conn = sqlite3.connect('../static/ledger.db')
+				c = conn.cursor()
+				c.execute("SELECT * FROM transactions WHERE block_height = ?;", (myblock,))
+
+				all = c.fetchall()
+				#print all
+				
+				c.close()
 		
 			if not all:
 				extext = "<p style='color:#C70039';>Error !!! Block, address or hash not found. Maybe you entered bad data or nothing at all?</p>"

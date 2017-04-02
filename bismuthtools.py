@@ -1,5 +1,5 @@
 # Bismuth Tools
-# version 0.32
+# version 0.40
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -38,9 +38,9 @@ def updatestatus(newstatus,newplace):
 	wx.PostEvent(statusbar,evt)
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.32</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.40</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>1st April 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>2nd April 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -71,7 +71,7 @@ m_txt = m_txt + "</table>"
 
 def i_am_first(my_first,the_address):
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT MIN(block_height) FROM transactions WHERE openfield = ?;",(my_first,))
@@ -88,7 +88,7 @@ def i_am_first(my_first,the_address):
 		return False
 
 def checkmyname(myaddress):
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE address = ? AND recipient = ? AND amount > ? ORDER BY block_height ASC;",(myaddress,myaddress,"1"))
@@ -104,11 +104,17 @@ def checkmyname(myaddress):
 			goodname = ""
 		else:
 			try:
-				tempfield = base64.b64decode(tempfield)
+				newfield = base64.b64decode(tempfield)
 			except:
 				pass
+			if "Minername=" in newfield:
+				if i_am_first(base64.b64encode(newfield),x[2]):
+					duff = newfield.split("=")
+					goodname = str(duff[1])
+				else:
+					goodname = ""
 			if "Minername=" in tempfield:
-				if i_am_first(base64.b64encode(tempfield),x[2]):
+				if i_am_first(tempfield,x[2]):
 					duff = tempfield.split("=")
 					goodname = str(duff[1])
 				else:
@@ -120,7 +126,7 @@ def checkmyname(myaddress):
 
 def latest():
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE reward != ? ORDER BY block_height DESC LIMIT 1;", ('0',)) #or it takes the first
@@ -133,7 +139,7 @@ def latest():
 	
 	global hyper_limit
 	
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE address = ? OR address = ? ORDER BY block_height DESC LIMIT 1;", ('Hypoblock','Hyperblock')) #or it takes the first
@@ -150,7 +156,7 @@ def latest():
 
 def zerocheck(zeroaddress):
 	
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT count(*) FROM transactions WHERE address = ? AND (reward != 0);",(zeroaddress,))
@@ -166,7 +172,7 @@ def zerocheck(zeroaddress):
 
 def getvars(myaddress):
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	
@@ -190,7 +196,7 @@ def getvars(myaddress):
 		b_perday = 0
 		c_power = 0.01
 	else:
-		conn = sqlite3.connect('static/ledger.db')
+		conn = sqlite3.connect('../static/ledger.db')
 		c = conn.cursor()
 		c.execute("SELECT timestamp FROM transactions WHERE block_height BETWEEN ? and ? AND recipient = ? AND (reward != 0) ORDER BY block_height ASC;", (hyper_limit,b_max,myaddress))
 		timeall = c.fetchall()
@@ -250,7 +256,7 @@ def rebuildme():
 	time.sleep(2)
 
 	# Get mining addresses from ledgerdb
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT distinct recipient FROM transactions WHERE block_height > ? AND reward != 0;",(hyper_limit,))
@@ -329,7 +335,7 @@ logging.info("Miner DB: Start Thread")
 #////////////////////////////////////////////////////////////
 
 def refresh(testAddress):
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT sum(amount) FROM transactions WHERE recipient = ?;",(testAddress,))
@@ -407,7 +413,7 @@ def bgetvars(myaddress):
 
 def tgetvars(myblock,myamount,mytitle):
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE block_height = ? AND amount = ?;", (myblock, myamount))
@@ -443,11 +449,11 @@ def wgetrans(thisaddress):
 
 	rows_total = 20
 
-	mempool = sqlite3.connect('mempool.db')
+	mempool = sqlite3.connect('../mempool.db')
 	mempool.text_factory = str
 	m = mempool.cursor()
 
-	conn = sqlite3.connect('static/ledger.db')
+	conn = sqlite3.connect('../static/ledger.db')
 	conn.text_factory = str
 	c = conn.cursor()
 
@@ -714,7 +720,7 @@ class PageTwo(wx.Panel):
 				extext = extext + "Credits: " + myxtions[0] + " | Debits: " + myxtions[1] + " | Rewards: " + myxtions[2] + " |"
 				extext = extext + " Fees: " + myxtions[3] + " | BALANCE: " + myxtions[4]
 				
-				conn = sqlite3.connect('static/ledger.db')
+				conn = sqlite3.connect('../static/ledger.db')
 				c = conn.cursor()
 				c.execute("SELECT * FROM transactions WHERE address = ? OR recipient = ? ORDER BY block_height DESC;", (str(myblock),str(myblock)))
 
@@ -723,7 +729,7 @@ class PageTwo(wx.Panel):
 				c.close()
 			else:
 				
-				conn = sqlite3.connect('static/ledger.db')
+				conn = sqlite3.connect('../static/ledger.db')
 				c = conn.cursor()
 				c.execute("SELECT * FROM transactions WHERE block_hash = ?;", (str(myblock),))
 
@@ -746,7 +752,7 @@ class PageTwo(wx.Panel):
 				all = []
 			else:
 					
-				conn = sqlite3.connect('static/ledger.db')
+				conn = sqlite3.connect('../static/ledger.db')
 				c = conn.cursor()
 				c.execute("SELECT * FROM transactions WHERE block_height = ?;", (myblock,))
 
@@ -935,8 +941,8 @@ class PageFour(wx.Panel):
 		self.Bind(wx.EVT_TIMER, self.update, self.timer)
 	
 		# import keys
-		if not os.path.exists('privkey_encrypted.der'):
-			key = RSA.importKey(open('privkey.der').read())
+		if not os.path.exists('../privkey_encrypted.der'):
+			key = RSA.importKey(open('../privkey.der').read())
 			private_key_readable = str(key.exportKey())
 			#public_key = key.publickey()
 			encrypted = 0
@@ -950,7 +956,7 @@ class PageFour(wx.Panel):
 			my_color = wx.GREEN
 		
 		#public_key_readable = str(key.publickey().exportKey())
-		public_key_readable = open('pubkey.der').read()
+		public_key_readable = open('../pubkey.der').read()
 		public_key_hashed = base64.b64encode(public_key_readable)
 		self.myaddress = hashlib.sha224(public_key_readable).hexdigest()
 		#private_key_readable = str(key.exportKey())
@@ -1200,7 +1206,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.32', 0)
+		statusbar.SetStatusText('Version 0.40', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		

@@ -16,7 +16,7 @@ No promises are given that the tools will run on your particular system
 
 Notes:
 
-1. In order to take into account the use of Hyperblocks technology the query components are only designed to use blocks since the latest hyperblock in the ledger.
+1. In order to take into account the use of Hyperblocks technology the query components are only designed to use blocks since the latest hyperblock in your ledger.
 
 Requirements
 
@@ -35,7 +35,9 @@ Linux e.g. Ubuntu 16.04 LTS
 
 File placement
 
-The files should be placed in the /bismuth folder on your installation folder. They could possibly be placed elsewhere but I haven't tested this yet. 
+The files should be placed into a folder called "tools" under the /bismuth folder on your main Bismuth installation folder.
+
+If a folder doesn't already exist called "tools" you will need to create one.
 
 miners.db
 
@@ -73,17 +75,17 @@ Version 0.31 Changes 29/03/2017
 
 Note: Make sure you delete your existing miner.db file before you run this update of the tool (or overwrite it with the one provided)
 
-Version 0.32 Changes 01/04/2017
+Version 0.40 Changes 02/04/2017
 
-1. Bug fix in miners.db rebuild
-2. Bug fix in miner naming process
+1. Change of install location to a sub folder of the Bismuth main folder. It is recommended you call this folder "tools" 
+2. Bug fix in miners.db rebuild
+3. Bug fix in miner naming process due to removal of base64encode in Bismuth code.
 
 Note: Make sure you delete your existing miner.db file before you run this update of the tool
 
 Future Improvements:
 
-1. Even better menus and menu content
-2. Possibly integrate node and miner functions
-3. Wallet functions
-4. Linux release with executable Done !!
-5. Network information
+1. Deliver future executable releases using an installer program
+2. Even better menus and menu content
+3. Network information
+4. Opt-in advertising function - get paid in Bismuth?

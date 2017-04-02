@@ -1,4 +1,4 @@
-cd "C:\Program Files (x86)\Bismuth" 
+cd "C:\Program Files (x86)\Bismuth\tools" 
 
 rem - edit the above line to the path of your files
 
