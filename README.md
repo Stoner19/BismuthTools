@@ -83,6 +83,12 @@ Version 0.40 Changes 02/04/2017
 
 Note: Make sure you delete your existing miner.db file before you run this update of the tool
 
+Version 0.41 Changes 07/04/2017
+ 
+1. Bug fix in miners.db rebuild
+
+Note: Make sure you delete your existing miner.db file before you run this update of the tool
+
 Future Improvements:
 
 1. Deliver future executable releases using an installer program

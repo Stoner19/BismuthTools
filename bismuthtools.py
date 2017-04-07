@@ -1,5 +1,5 @@
 # Bismuth Tools
-# version 0.40
+# version 0.41
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -38,9 +38,9 @@ def updatestatus(newstatus,newplace):
 	wx.PostEvent(statusbar,evt)
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.40</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.41</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>2nd April 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>7th April 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -99,6 +99,7 @@ def checkmyname(myaddress):
 
 	for x in namelist:
 		tempfield = str(x[11])
+		newfield = ""
 		
 		if tempfield == "reward" or "":
 			goodname = ""
@@ -1206,7 +1207,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.40', 0)
+		statusbar.SetStatusText('Version 0.41', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		

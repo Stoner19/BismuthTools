@@ -1,5 +1,5 @@
 # Bismuth Tools Web Edition
-# version 0.40_Web
+# version 0.41_Web
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -54,6 +54,7 @@ def checkmyname(myaddress):
 
 	for x in namelist:
 		tempfield = str(x[11])
+		newfield = ""
 		
 		if tempfield == "reward" or "":
 			goodname = ""
