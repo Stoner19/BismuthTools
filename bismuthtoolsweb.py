@@ -1,5 +1,5 @@
 # Bismuth Tools Web Edition
-# version 0.41_Web
+# version 0.42_Web
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -13,12 +13,26 @@ import os
 from threading import Thread
 import base64
 import logging
+import random
+import ConfigParser
 
 logging.basicConfig(level=logging.INFO, 
                     filename='toolsweb.log', # log to this file
                     format='%(asctime)s %(message)s') # include timestamp
 
 logging.info("logging initiated")
+
+config = ConfigParser.ConfigParser()
+config.readfp(open(r'sponsor.txt'))
+logging.info("Reading config file.....")
+#mysponsor = int(config.get('My Sponsors', 'sponsors'))
+logging.info("Config file read completed")
+
+#if mysponsor == 1:
+#	mysponsor = True
+#else:
+#	mysponsor = False
+mysponsor = False
 
 # //////////////////////////////////////////////////////////
 # Miner database stuff
@@ -76,7 +90,7 @@ def checkmyname(myaddress):
 				else:
 					goodname = ""
 
-	logging.info("Miner DB: Checkname result: Address " + str(myaddress) + " = " + goodname)
+	logging.info("Miner DB: Checkname result: Address {} = {}".format(str(myaddress),goodname))
 	
 	return goodname
 
@@ -105,8 +119,8 @@ def latest():
 	
 	hyper_limit = (hyper_result[0][0]) + 1
 	
-	logging.info("Latest block queried: " + str(db_block_height))
-	logging.info("Hyper_Limit is: " + str(hyper_limit))
+	logging.info("Latest block queried: {}".format(str(db_block_height)))
+	logging.info("Hyper_Limit is: {}".format(str(hyper_limit)))
 
 	return db_block_height, last_block_ago
 
@@ -119,7 +133,7 @@ def zerocheck(zeroaddress):
 	this_count = c.fetchone()[0]
 	c.close()
 	
-	logging.info("Miner DB: Checked for zero transactions: " + zeroaddress)
+	logging.info("Miner DB: Checked for zero transactions: {}".format(zeroaddress))
 	
 	if this_count > 0:
 		return False
@@ -209,12 +223,12 @@ def rebuildme():
 	logging.info("Miner DB: Getting up to date list of miners.....")
 
 	# Get mining addresses from ledgerdb
-	conn = sqlite3.connect('../static/ledger.db')
-	conn.text_factory = str
-	c = conn.cursor()
-	c.execute("SELECT distinct recipient FROM transactions WHERE block_height > ? AND reward != 0;",(hyper_limit,))
-	miner_list_raw = c.fetchall()
-	c.close()
+	donn = sqlite3.connect('../static/ledger.db')
+	donn.text_factory = str
+	d = donn.cursor()
+	d.execute("SELECT distinct recipient FROM transactions WHERE block_height > ? AND reward != 0;",(hyper_limit,))
+	miner_list_raw = d.fetchall()
+	d.close()
 
 	temp_result = []
 	
@@ -233,17 +247,19 @@ def rebuildme():
 
 	logging.info("Miner DB: Inserting information into database.....")
 			
-	conn = sqlite3.connect('tempminers.db')
-	conn.text_factory = str
-	c = conn.cursor()
+	bonn = sqlite3.connect('tempminers.db')
+	bonn.text_factory = str
+	b = bonn.cursor()
+	
+	time.sleep(1)
 
 	for y in temp_result:
 
-		c.execute('INSERT INTO minerlist VALUES (?,?,?,?,?,?,?,?,?)', (y[0],y[1],y[2],y[3],y[4],y[5],y[6],y[7],y[8]))
+		b.execute('INSERT INTO minerlist VALUES (?,?,?,?,?,?,?,?,?)', (y[0],y[1],y[2],y[3],y[4],y[5],y[6],y[7],y[8]))
 
-	conn.commit()
-	c.close()
-	conn.close()
+	bonn.commit()
+	b.close()
+	bonn.close()
 
 	if os.path.isfile('miners.db'):
 		os.remove('miners.db')
@@ -348,6 +364,49 @@ def miners():
 	c.close()
 
 	return miner_result
+	
+def get_sponsor():
+
+	if mysponsor:
+
+		logging.info("Sponsors: Get sites from sponsors.db")
+		conn = sqlite3.connect('sponsors.db')
+		conn.text_factory = str
+		c = conn.cursor()
+		c.execute("SELECT * FROM sponsorlist;")
+		sponsor_result = c.fetchall()
+		c.close()
+		
+		x_top = len(sponsor_result) -1
+		x_go = random.randint(0,x_top)
+		
+		sponsor_display = []
+		
+		sponsor_display.append('<table style="width: 200px;">\n')
+		sponsor_display.append('<tr style="text-align: center;">\n')
+		sponsor_display.append('<td style="border:hidden;"><a href="{}" style="text-decoration:none;">'.format(sponsor_result[x_go][2]))
+		sponsor_display.append('{}</a></td>\n'.format(sponsor_result[x_go][6]))
+		sponsor_display.append('</tr>\n')
+		sponsor_display.append('<tr style="text-align: center;">\n')
+		sponsor_display.append('<td style="border:hidden;">\n')
+		sponsor_display.append('<a href="{}" style="text-decoration:none;">'.format(sponsor_result[x_go][2]))
+		sponsor_display.append('<img src="{}" alt="{}" height="100px">'.format(sponsor_result[x_go][1],sponsor_result[x_go][3]))
+		sponsor_display.append('</img></a>\n')
+		sponsor_display.append('</td>\n')
+		sponsor_display.append('</tr>\n')
+		sponsor_display.append('<tr style="text-align: center;">\n')
+		sponsor_display.append('<td style="border:hidden;"><a href="{}" style="text-decoration:none;">'.format(sponsor_result[x_go][2]))
+		sponsor_display.append('{}</a></td>\n'.format(sponsor_result[x_go][0]))
+		sponsor_display.append('</tr>\n')
+		sponsor_display.append('</table>\n')
+		
+		logging.info("Sponsors: {} was displayed".format(sponsor_result[x_go][2]))
+	
+	else:
+		sponsor_display = []
+		sponsor_display.append('<p></p>')
+
+	return sponsor_display
 
 def bgetvars(myaddress):
 
@@ -366,8 +425,8 @@ def my_head(bo):
 	
 	mhead.append('<!doctype html>\n')
 	mhead.append('<html>\n')
-	mhead.append('<link rel = "icon" href = "static/explorer.ico" type = "image/x-icon" / >\n')
 	mhead.append('<head>\n')
+	mhead.append('<link rel = "icon" href = "static/explorer.ico" type = "image/x-icon" />\n')
 	mhead.append('<style>\n')
 	mhead.append('h1, h2, p, li, td, label {font-family: Verdana;}\n')
 	mhead.append('body {font-size: 75%;}\n')
@@ -377,7 +436,7 @@ def my_head(bo):
 	mhead.append('li a:hover {background-color: #111;}\n')
 	mhead.append(bo + '\n')
 	mhead.append('</style>\n')
-	mhead.append('<title>Bismuth Query Tools</title>\n')
+	mhead.append('<title>Bismuth Tools</title>\n')
 	mhead.append('</head>\n')
 	mhead.append('<body background="static/explorer_bg.png">\n')
 	mhead.append('<center>\n')
@@ -416,30 +475,39 @@ class index:
 				color_cell = "#E8E8E8"
 			else:
 				color_cell = "white"
-			thisview.append("<tr bgcolor ="+color_cell+">")
-			thisview.append("<td>" + str(x[0]) + "</td>")
-			thisview.append("<td>" + str(time.strftime("%Y/%m/%d,%H:%M:%S", time.localtime(float(x[1])))))
-			thisview.append("<td>" + str(x[2]) + "</td>")
-			thisview.append("<td>" + str(x[3].encode('utf-8')) + "</td>")
-			thisview.append("<td>" + str(x[4]) + "</td>")
-			#thisview.append("<td>" + str(x[5]) + "</td>")
-			#thisview.append("<td>" + str(x[6]) + "</td>")
-			thisview.append("<td>" + str(x[7]) + "</td>")
-			thisview.append("<td>" + str(x[8]) + "</td>")
-			thisview.append("<td>" + str(x[9]) + "</td>")
-			thisview.append("<td>" + str(x[10]) + "</td>")
-			thisview.append("</tr>\n")
+			thisview.append('<tr bgcolor ="{}">'.format(color_cell))
+			thisview.append('<td>{}</td>'.format(str(x[0])))
+			thisview.append('<td>{}'.format(str(time.strftime("%Y/%m/%d,%H:%M:%S", time.localtime(float(x[1]))))))
+			thisview.append('<td>{}</td>'.format(str(x[2])))
+			thisview.append('<td>{}</td>'.format(str(x[3].encode('utf-8'))))
+			thisview.append('<td>{}</td>'.format(str(x[4])))
+			thisview.append('<td>{}</td>'.format(str(x[7])))
+			thisview.append('<td>{}</td>'.format(str(x[8])))
+			thisview.append('<td>{}</td>'.format(str(x[9])))
+			thisview.append('<td>{}</td>'.format(str(x[10])))
+			thisview.append('</tr>\n')
 			i = i+1		
 		
 	
 		#initial = my_head('table, th, td {border: 0;}')
 		initial = my_head('table, th, td {border: 1px solid black;border-collapse: collapse;padding: 5px;-webkit-column-width: 100%;-moz-column-width: 100%;column-width: 100%;}')
-		
+	
+		initial.append('<table ><tbody><tr>\n')
+		initial.append('<td align="center" style="border:hidden;">')
+		sponsor1 = get_sponsor()
+		initial = initial + sponsor1
+		initial.append('</td>\n')
+		initial.append('<td align="center" style="border:hidden;">\n')
 		initial.append('<h1>Bismuth Cryptocurrency</h1>\n')
 		initial.append('<h2>Welcome to the Bismuth Tools Web Edition</h2>\n')
 		initial.append('<p>Choose what you want to to do next by clicking an option from the menu above</p>\n')
 		initial.append('<h2>Last 15 Transactions</h2>\n')
-		#initial.append('<p>Hint: Click on a block number to see more detail</p>\n')
+		initial.append('</td>\n')
+		initial.append('<td align="center" style="border:hidden;">')
+		sponsor2 = get_sponsor()
+		initial = initial + sponsor2
+		initial.append('</td>\n')
+		initial.append('</tr></tbody></table>\n')
 		initial.append('<table style="font-size: 70%">\n')
 		initial.append('<tr>\n')
 		initial.append('<td>Block</td>\n')
@@ -450,14 +518,13 @@ class index:
 		initial.append('<td>Block Hash</td>\n')
 		initial.append('<td>Fee</td>\n')
 		initial.append('<td>Reward</td>\n')
-		initial.append('<td>Confirmations</td>\n')
+		initial.append('<td>Keep</td>\n')
 		initial.append('</tr>\n')
 		initial = initial + thisview
 		initial.append('</table>\n')
+		#initial.append('<p>Copyright: Maccaspacca 2017 | <a href="https://github.com/maccaspacca/BismuthTools" style="text-decoration:none;">')
+		#initial.append('Click Here for Sponsorship Information</a></p>\n')
 		initial.append('</center>\n')
-		initial.append('</body>\n')
-		initial.append('</html>')
-		initial.append('</center>\n')		
 		initial.append('</body>\n')
 		initial.append('</html>')
 
@@ -483,14 +550,14 @@ class minerquery:
 			#print "Info requested: " + getaddress
 			m_info = bgetvars(getaddress)
 			addressis = "<table style='width:50%;'>"
-			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Address:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[0]) + "</td></tr>"
-			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Latest Block Found:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[1]) + "</td></tr>"
-			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>First Block Found:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[2]) + "</td></tr>"
-			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Total Blocks Found:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[3]) + "</td></tr>"
-			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Time Spent Mining:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[4]) + " Days (Adjusted Estimate)</td></tr>"
-			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Blocks Per Day:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[5]) + " (Estimate)</td></tr>"
-			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Total Rewards:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[6]) + "</td></tr>"
-			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Total Energy Cost:</b></td><td bgcolor='#D0F7C3'>$" + str(m_info[7]) + " (Estimate | 180W PC usage | USD)</td></tr>"
+			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Address:</b></td><td bgcolor='#D0F7C3'>{}</td></tr>".format(str(m_info[0]))
+			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Latest Block Found:</b></td><td bgcolor='#D0F7C3'>{}</td></tr>".format(str(m_info[1]))
+			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>First Block Found:</b></td><td bgcolor='#D0F7C3'>{}</td></tr>".format(str(m_info[2]))
+			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Total Blocks Found:</b></td><td bgcolor='#D0F7C3'>{}</td></tr>".format(str(m_info[3]))
+			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Time Spent Mining:</b></td><td bgcolor='#D0F7C3'>{} Days (Adjusted Estimate)</td></tr>".format(str(m_info[4]))
+			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Blocks Per Day:</b></td><td bgcolor='#D0F7C3'>{} (Estimate)</td></tr>".format(str(m_info[5]))
+			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Total Rewards:</b></td><td bgcolor='#D0F7C3'>{}</td></tr>".format(str(m_info[6]))
+			addressis = addressis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Total Energy Cost:</b></td><td bgcolor='#D0F7C3'>${} (Estimate | 180W PC usage | USD)</td></tr>".format(str(m_info[7]))
 			addressis = addressis + "</table>"
 	
 		all = miners()
@@ -505,13 +572,13 @@ class minerquery:
 					color_cell = "white"
 				else:
 					color_cell = "#E8E8E8"
-				view.append("<tr bgcolor ="+color_cell+">")
-				view.append("<td>" + str(j) + "</td>")
+				view.append("<tr bgcolor ='{}'>".format(color_cell))
+				view.append("<td>{}</td>".format(str(j)))
 				if len(str(x[8])) > 0:
-					view.append("<td><a href='/minerquery?myaddy="+ thisminer + "'>" + str(x[8]) + "</a></td>")
+					view.append("<td><a href='/minerquery?myaddy={}'>{}</a></td>".format(thisminer,str(x[8])))
 				else:
-					view.append("<td><a href='/minerquery?myaddy="+ thisminer + "'>" + thisminer + "</a></td>")					
-				view.append("<td>" + str(x[3]) + "</td>")				
+					view.append("<td><a href='/minerquery?myaddy={}'>{}</a></td>".format(thisminer,thisminer))					
+				view.append("<td>{}</td>".format(str(x[3])))				
 				j = j+1
 			view.append("</tr>\n")
 			i = i+1
@@ -519,10 +586,10 @@ class minerquery:
 		lister = my_head('table, th, td {border: 1px solid black;border-collapse: collapse;padding: 5px;-webkit-column-width: 100%;-moz-column-width: 100%;column-width: 100%;}')
 		
 		lister.append('<h2>Bismuth Miner Query Tool</h2>\n')
-		lister.append('<p><b>Mining statistics since block number: ' + str(hyper_limit) + '</b></p>\n')
+		lister.append('<p><b>Mining statistics since block number: {}</b></p>\n'.format(str(hyper_limit)))
 		lister.append('<p><b>Hint: Click on an address to see more detail</b></p>\n')
 		lister.append('<p>Note: this page may be up to 20 mins behind</p>\n')
-		lister.append('<p style="color:#08750A";>' + addressis + '</p>\n')
+		lister.append('<p style="color:#08750A";>{}</p>\n'.format(addressis))
 		lister.append('<p></p>\n')
 		lister.append('<table style="width:60%" bgcolor="white">\n')
 		lister.append('<tr>\n')
@@ -558,8 +625,8 @@ class ledgerquery:
 		plotter.append('</table>\n')
 		plotter.append('</form>\n')
 		plotter.append('</p>\n')
-		plotter.append('<p style="color:#08750A";>The latest block: ' + str(mylatest[0]) + ' was found ' + str(int(mylatest[1])) + ' seconds ago</p>\n')
-		plotter.append('<p style="color:#08750A";>The last Hyperblock was at block: ' + str(hyper_limit -1) + '</p>\n')
+		plotter.append('<p style="color:#08750A";>The latest block: {} was found {} seconds ago</p>\n'.format(str(mylatest[0]),str(int(mylatest[1]))))
+		plotter.append('<p style="color:#08750A";>The last Hyperblock was at block: {}</p>\n'.format(str(hyper_limit -1)))
 		plotter.append('</body>\n')
 		plotter.append('</html>')
 		# Initial Form
@@ -597,8 +664,8 @@ class ledgerquery:
 			
 			if float(myxtions[4]) > 0:
 			
-				extext = "<p style='color:#08750A';>ADDRESS FOUND | Credits: " + myxtions[0] + " | Debits: " + myxtions[1] + " | Rewards: " + myxtions[2] + " |"
-				extext = extext + " Fees: " + myxtions[3] + " | BALANCE: " + myxtions[4] + "</p>"
+				extext = "<p style='color:#08750A';>ADDRESS FOUND | Credits: {} | Debits: {} | Rewards: {} |".format(myxtions[0],myxtions[1],myxtions[2])
+				extext = extext + " Fees: {} | BALANCE: {}</p>".format(myxtions[3],myxtions[4])
 				
 				conn = sqlite3.connect('../static/ledger.db')
 				c = conn.cursor()
@@ -652,19 +719,17 @@ class ledgerquery:
 				color_cell = "#E8E8E8"
 			else:
 				color_cell = "white"
-			view.append("<tr bgcolor ="+color_cell+">")
-			view.append("<td>" + str(x[0]) + "</td>")
-			view.append("<td>" + str(time.strftime("%Y/%m/%d,%H:%M:%S", time.localtime(float(x[1])))))
-			view.append("<td>" + str(x[2]) + "</td>")
-			view.append("<td>" + str(x[3].encode('utf-8')) + "</td>")
-			view.append("<td>" + str(x[4]) + "</td>")
-			#view.append("<td>" + str(x[5]) + "</td>")
-			#view.append("<td>" + str(x[6]) + "</td>")
-			view.append("<td>" + str(x[7]) + "</td>")
-			view.append("<td>" + str(x[8]) + "</td>")
-			view.append("<td>" + str(x[9]) + "</td>")
-			view.append("<td>" + str(x[10]) + "</td>")
-			view.append("</tr>\n")
+			view.append('<tr bgcolor ="{}">'.format(color_cell))
+			view.append('<td>{}</td>'.format(str(x[0])))
+			view.append('<td>{}'.format(str(time.strftime("%Y/%m/%d,%H:%M:%S", time.localtime(float(x[1]))))))
+			view.append('<td>{}</td>'.format(str(x[2])))
+			view.append('<td>{}</td>'.format(str(x[3].encode('utf-8'))))
+			view.append('<td>{}</td>'.format(str(x[4])))
+			view.append('<td>{}</td>'.format(str(x[7])))
+			view.append('<td>{}</td>'.format(str(x[8])))
+			view.append('<td>{}</td>'.format(str(x[9])))
+			view.append('<td>{}</td>'.format(str(x[10])))
+			view.append('</tr>\n')
 			i = i+1
 		
 		replot = my_head('table, th, td {border: 1px solid black;border-collapse: collapse;padding: 5px;-webkit-column-width: 100%;-moz-column-width: 100%;column-width: 100%;}')
@@ -678,7 +743,7 @@ class ledgerquery:
 		replot.append('</table>\n')
 		replot.append('</form>\n')
 		replot.append('</p>\n')
-		replot.append('<p style="color:#08750A";>The latest block: ' + str(mylatest[0]) + ' was found ' + str(int(mylatest[1])) + ' seconds ago</p>\n')
+		replot.append('<p style="color:#08750A";>The latest block: {} was found {} seconds ago</p>\n'.format(str(mylatest[0]),str(int(mylatest[1]))))
 		replot.append(extext)
 		replot.append('<table style="font-size: 70%">\n')
 		replot.append('<tr>\n')
@@ -690,7 +755,7 @@ class ledgerquery:
 		replot.append('<td>Block Hash</td>\n')
 		replot.append('<td>Fee</td>\n')
 		replot.append('<td>Reward</td>\n')
-		replot.append('<td>Confirmations</td>\n')
+		replot.append('<td>Keep</td>\n')
 		replot.append('</tr>\n')
 		replot = replot + view
 		replot.append('</table>\n')

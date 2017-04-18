@@ -1,5 +1,5 @@
 # Bismuth Tools
-# version 0.41
+# version 0.42
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -38,9 +38,9 @@ def updatestatus(newstatus,newplace):
 	wx.PostEvent(statusbar,evt)
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.41</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.42</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>7th April 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>17th April 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -121,7 +121,7 @@ def checkmyname(myaddress):
 				else:
 					goodname = ""
 
-	logging.info("Checkname result: Address " + str(myaddress) + " = " + goodname)
+	logging.info("Checkname result: Address {} = {}".format(str(myaddress),goodname))
 	
 	return goodname
 
@@ -150,8 +150,8 @@ def latest():
 	
 	hyper_limit = (hyper_result[0][0]) + 1
 	
-	logging.info("Latest block queried: " + str(db_block_height))
-	logging.info("Hyper_Limit is: " + str(hyper_limit))
+	logging.info("Latest block queried: {}".format(str(db_block_height)))
+	logging.info("Hyper_Limit is: {}".format(str(hyper_limit)))
 
 	return db_block_height, last_block_ago
 
@@ -421,6 +421,10 @@ def tgetvars(myblock,myamount,mytitle):
 	trans_details = c.fetchone()
 	c.close()
 	m_info = trans_details
+	if str(m_info[10]) == "1":
+		keepme = "Yes"
+	else:
+		keepme = "No"
 	global transis
 	transis = []
 	tempsis = "<table>"
@@ -432,7 +436,7 @@ def tgetvars(myblock,myamount,mytitle):
 	tempsis = tempsis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Block Hash:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[7]) + "</td></tr>"
 	tempsis = tempsis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Fee:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[8]) + "</td></tr>"
 	tempsis = tempsis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Reward:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[9]) + "</td></tr>"
-	tempsis = tempsis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Confirms:</b></td><td bgcolor='#D0F7C3'>" + str(m_info[10]) + "</td></tr>"
+	tempsis = tempsis + "<tr><td align='right' bgcolor='#DAF7A6'><b>Keep:</b></td><td bgcolor='#D0F7C3'>" + keepme + "</td></tr>"
 	tempsis = tempsis + "</table>"
 	
 	transis.append(tempsis)
@@ -514,7 +518,7 @@ class AboutBoxM(wx.Dialog):
 			style=wx.DEFAULT_DIALOG_STYLE|wx.THICK_FRAME|wx.RESIZE_BORDER|
 				wx.TAB_TRAVERSAL)
 		hwin = HtmlWindow(self, -1, size=(560,260))
-		aboutText = '<p style="color:#08750A";>' + addressis + '</p>'
+		aboutText = '<p style="color:#08750A";>{}</p>'.format(addressis)
 		hwin.SetPage(aboutText)
 		btn = hwin.FindWindowById(wx.ID_OK)
 		irep = hwin.GetInternalRepresentation()
@@ -529,7 +533,7 @@ class AboutBoxT(wx.Dialog):
 			style=wx.DEFAULT_DIALOG_STYLE|wx.THICK_FRAME|wx.RESIZE_BORDER|
 				wx.TAB_TRAVERSAL)
 		hwin = HtmlWindow(self, -1, size=(560,260))
-		aboutText = '<p style="color:#08750A";>' + transis[0] + '</p>'
+		aboutText = '<p style="color:#08750A";>{}</p>'.format(transis[0])
 		hwin.SetPage(aboutText)
 		btn = hwin.FindWindowById(wx.ID_OK)
 		irep = hwin.GetInternalRepresentation()
@@ -545,13 +549,13 @@ class AboutBox(wx.Dialog):
 				wx.TAB_TRAVERSAL)
 		hwin = HtmlWindow(self, -1, size=(420,300))
 		if thisid == 101:
-			aboutText = '<p style="color:#08750A">' + w_txt + '</p>'
+			aboutText = '<p style="color:#08750A">{}</p>'.format(w_txt)
 		elif thisid == 102:
-			aboutText = '<p style="color:#08750A">' + a_txt + '</p>'
+			aboutText = '<p style="color:#08750A">{}</p>'.format(a_txt)
 		elif thisid == 103:
-			aboutText = '<p style="color:#08750A">' + l_txt + '</p>'
+			aboutText = '<p style="color:#08750A">{}</p>'.format(l_txt)
 		elif thisid == 104:
-			aboutText = '<p style="color:#08750A">' + m_txt + '</p>'
+			aboutText = '<p style="color:#08750A">{}</p>'.format(m_txt)
 		hwin.SetPage(aboutText)
 		irep = hwin.GetInternalRepresentation()
 		hwin.SetSize((irep.GetWidth()+10, irep.GetHeight()+10))
@@ -651,8 +655,8 @@ class PageTwo(wx.Panel):
 		
 		self.mylatest = latest()
 		
-		self.p2text = "The latest block: " + str(self.mylatest[0]) + " was found " + str(int(self.mylatest[1])) + " seconds ago\n"
-		self.p2text = self.p2text + "The latest Hyperblock is at block number: " + str(hyper_limit -1)
+		self.p2text = "The latest block: {} was found {} seconds ago\n".format(str(self.mylatest[0]),str(int(self.mylatest[1])))
+		self.p2text = self.p2text + "The latest Hyperblock is at block number: {}".format(str(hyper_limit -1))
 		
 		self.l_text5 = wx.StaticText(self, -1, self.p2text)
 		self.l_text5.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
@@ -697,7 +701,7 @@ class PageTwo(wx.Panel):
 
 	def OnSubmit(self, event):
 		myblock = str(self.lt1.GetValue())
-		logging.info("Ledger: Query for: " + str(myblock))
+		logging.info("Ledger: Query for: {}".format(str(myblock)))
 		
 		if not myblock: #Nonetype handling - simply replace with "0"
 			myblock = "0"
@@ -717,9 +721,9 @@ class PageTwo(wx.Panel):
 			if float(myxtions[4]) > 0:
 			
 				self.l_text6.SetForegroundColour("#08750A")
-				extext = "Success !! Transactions found for address: " + myblock + "\n"
-				extext = extext + "Credits: " + myxtions[0] + " | Debits: " + myxtions[1] + " | Rewards: " + myxtions[2] + " |"
-				extext = extext + " Fees: " + myxtions[3] + " | BALANCE: " + myxtions[4]
+				extext = "Success !! Transactions found for address: {}\n".format(myblock)
+				extext = extext + "Credits: {} | Debits: {} | Rewards: {} |".format(myxtions[0],myxtions[1],myxtions[2])
+				extext = extext + " Fees: {} | BALANCE: {}".format(myxtions[3],myxtions[4])
 				
 				conn = sqlite3.connect('../static/ledger.db')
 				c = conn.cursor()
@@ -743,7 +747,7 @@ class PageTwo(wx.Panel):
 					extext = "Error !!! Nothing found for the address or block hash you entered"
 				else:
 					self.l_text6.SetForegroundColour("#08750A")
-					extext = "Success !! Transactions found for block hash: " + myblock	
+					extext = "Success !! Transactions found for block hash: {}".format(myblock)	
 
 		if my_type == 2:
 
@@ -767,7 +771,7 @@ class PageTwo(wx.Panel):
 				extext = "Error !!! Block, address or hash not found. Maybe you entered bad data or nothing at all?"
 			else:
 				self.l_text6.SetForegroundColour("#08750A")
-				extext = "Success !! Transactions found for block: " + myblock					
+				extext = "Success !! Transactions found for block: {}".format(myblock)					
 		
 		self.l_text6.SetLabel(extext)
 		self.box2.Layout()
@@ -812,7 +816,7 @@ class PageTwo(wx.Panel):
 	def update(self, event):
 		self.timer1.Stop()
 		self.mylatest = latest()
-		self.p2text = "The latest block: " + str(self.mylatest[0]) + " was found " + str(int(self.mylatest[1])) + " seconds ago"
+		self.p2text = "The latest block: {} was found {} seconds ago".format(str(self.mylatest[0]),str(int(self.mylatest[1])))
 		self.l_text5.SetLabel(self.p2text)
 		logging.info("Ledger: Latest block refresh")
 		self.timer1.Start(300 * 1000)
@@ -1207,7 +1211,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.41', 0)
+		statusbar.SetStatusText('Version 0.42', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		

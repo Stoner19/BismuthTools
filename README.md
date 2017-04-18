@@ -26,12 +26,14 @@ Windows
 2. Bismuth cryptocurrency installed via the latest installation executable at https://github.com/hclivess/bismuth/releases or run from source
 3. Python 2.7 and dependencies as detailed at https://bitcointalk.org/index.php?topic=1525078
 4. wxpython for your Python 2.7 installation as found here: https://wxpython.org/download.php
+5. If you have sponsors enabled then you will need BS4 (pip install bs4)
 
 Linux e.g. Ubuntu 16.04 LTS
 
 1. Python 2.7 and dependencies as detailed at https://bitcointalk.org/index.php?topic=1525078
 2. wxpython for your Python 2.7 installation as found here: https://wxpython.org/download.php or installed using apt-get
 3. The Bismuth cryptocurrency installed from source (some additional python components such as pysocks may be needed depending on your installation)
+4. If you have sponsors enabled then you will need BS4 (pip install bs4)
 
 File placement
 
@@ -89,9 +91,17 @@ Version 0.41 Changes 07/04/2017
 
 Note: Make sure you delete your existing miner.db file before you run this update of the tool
 
+Version 0.42 Changes 17/04/2017
+ 
+1. Bug fix in miners.db rebuild
+2. Pythonic improvements (ongoing)
+3. Initial test code for sponsors / advertisers in web tools - more information provided later (for the moment this is switched off)
+
+Note: Make sure you delete your existing miner.db file before you run this update of the tool
+
 Future Improvements:
 
-1. Deliver future executable releases using an installer program
+1. Deliver future executable releases using an installer program (version 0.5)
 2. Even better menus and menu content
 3. Network information
-4. Opt-in advertising function - get paid in Bismuth?
+4. Opt-in advertising function - get paid in Bismuth after testing phase
