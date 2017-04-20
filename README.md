@@ -28,8 +28,11 @@ Windows
 
 4. Run from source
  a. Python 2.7 and dependencies as detailed at https://bitcointalk.org/index.php?topic=1525078
+ 
  b. wxpython for your Python 2.7 installation as found here: https://wxpython.org/download.php
+ 
  c. If you have sponsors enabled then you will need BS4 (pip install bs4)
+ 
  d. If you wish you can compile your own executables using pyinstaller and the .cmd files provided
 
 Linux e.g. Ubuntu 16.04 LTS
