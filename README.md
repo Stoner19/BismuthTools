@@ -24,9 +24,13 @@ Windows
 
 1. Windows 7 or better
 2. Bismuth cryptocurrency installed via the latest installation executable at https://github.com/hclivess/bismuth/releases or run from source
-3. Python 2.7 and dependencies as detailed at https://bitcointalk.org/index.php?topic=1525078
-4. wxpython for your Python 2.7 installation as found here: https://wxpython.org/download.php
-5. If you have sponsors enabled then you will need BS4 (pip install bs4)
+3. The latest executable from releases https://github.com/maccaspacca/BismuthTools/releases use "bismuthtools.exe" for desktop or "bismuthtoolsweb.exe" if you want to access from a browser (localhost:8080)
+
+4. Run from source
+ a. Python 2.7 and dependencies as detailed at https://bitcointalk.org/index.php?topic=1525078
+ b. wxpython for your Python 2.7 installation as found here: https://wxpython.org/download.php
+ c. If you have sponsors enabled then you will need BS4 (pip install bs4)
+ d. If you wish you can compile your own executables using pyinstaller and the .cmd files provided
 
 Linux e.g. Ubuntu 16.04 LTS
 
@@ -34,6 +38,7 @@ Linux e.g. Ubuntu 16.04 LTS
 2. wxpython for your Python 2.7 installation as found here: https://wxpython.org/download.php or installed using apt-get
 3. The Bismuth cryptocurrency installed from source (some additional python components such as pysocks may be needed depending on your installation)
 4. If you have sponsors enabled then you will need BS4 (pip install bs4)
+5. You can also compile your own executables using pyinstaller and the .cmd file provided or use the ones provided in releases
 
 File placement
 
