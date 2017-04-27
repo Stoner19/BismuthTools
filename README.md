@@ -107,9 +107,17 @@ Version 0.42 Changes 17/04/2017
 
 Note: Make sure you delete your existing miner.db file before you run this update of the tool
 
+Version 0.43 Changes 27/04/2017 (web tools only)
+ 
+1. Pythonic improvements (ongoing)
+2. Initial implementation of sponsors / advertisers in web tools
+3. Ledger query improvements
+
+Note: Make sure you delete your existing miner.db file before you run this update of the tool
+
 Future Improvements:
 
 1. Deliver future executable releases using an installer program (version 0.5)
 2. Even better menus and menu content
-3. Network information
-4. Opt-in advertising function - get paid in Bismuth after testing phase
+3. Opt-in advertising function - get paid in Bismuth after testing phase - Done
+4. RC1 version of web tools
