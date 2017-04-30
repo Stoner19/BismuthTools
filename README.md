@@ -68,6 +68,8 @@ rate = <insert the number of blocks per Bismuth the sponsor advert will be displ
 
 There are two sponsor spots on the main web landing page of the tools.
 
+Changes
+=======
 
 Version 0.2 Improvements 21/03/2017
 
