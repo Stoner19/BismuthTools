@@ -1,5 +1,5 @@
 # Bismuth Tools Web Edition
-# version 0.43_Web
+# version 1.00_web
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca

@@ -1,11 +1,12 @@
 # Bismuth Tools
-# version 0.42
+# version 1.00
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
 
 import wx
 import wx.html
+import wx.lib.agw.hyperlink as hl
 import sqlite3
 import time
 import re
@@ -38,9 +39,9 @@ def updatestatus(newstatus,newplace):
 	wx.PostEvent(statusbar,evt)
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>0.42</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>1.00</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>17th April 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>30th April 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -326,13 +327,7 @@ def checkstart():
 		# create empty minerlist
 
 checkstart()
-
-background_thread = Thread(target=buildminerdb)
-background_thread.daemon = True
-background_thread.start()
-logging.info("Miner DB: Start Thread")
-
-		
+	
 #////////////////////////////////////////////////////////////
 
 def refresh(testAddress):
@@ -465,8 +460,6 @@ def wgetrans(thisaddress):
 	for row in m.execute("SELECT * FROM transactions WHERE address = ? OR recipient = ? ORDER BY timestamp DESC LIMIT 19;",(thisaddress,)+(thisaddress,)):
 		rows_total = rows_total - 1
 
-		#mempool_timestamp = row[1]
-		#datasheet.append(datetime.fromtimestamp(float(mempool_timestamp)).strftime('%Y-%m-%d %H:%M:%S'))
 		datasheet.append("unconfirmed")
 		mempool_address = row[1]
 		datasheet.append(mempool_address)
@@ -596,17 +589,11 @@ class PageOne(wx.Window):
 		ins1.SetForegroundColour("#444995")
 		ins1.SetSize(ins1.GetBestSize())
 		box1.Add(ins1, 0, wx.ALL|wx.CENTER, 5)
-		
-		hyper1 = wx.StaticText(self, -1, "*Note: This tool is now Hyperblocks compliant*")
-		hyper1.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
-		hyper1.SetForegroundColour("#444995")
-		hyper1.SetSize(ins1.GetBestSize())
-		box1.Add(hyper1, 0, wx.ALL|wx.CENTER, 5)
-		
-		hyper2 = wx.StaticText(self, -1, "Query information may be limited to blocks after the latest hyperblock in the ledger")
+	
+		hyper2 = wx.StaticText(self, -1, "Query information is limited to blocks after the latest hyperblock in the ledger")
 		hyper2.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		hyper2.SetForegroundColour("#444995")
-		hyper2.SetSize(ins1.GetBestSize())
+		hyper2.SetSize(hyper2.GetBestSize())
 		box1.Add(hyper2, 0, wx.ALL|wx.CENTER, 5)
 
 		self.SetSizer(box1)
@@ -656,17 +643,34 @@ class PageTwo(wx.Panel):
 		self.mylatest = latest()
 		
 		self.p2text = "The latest block: {} was found {} seconds ago\n".format(str(self.mylatest[0]),str(int(self.mylatest[1])))
-		self.p2text = self.p2text + "The latest Hyperblock is at block number: {}".format(str(hyper_limit -1))
+		#self.p2text = self.p2text + "The latest Hyperblock was at block number: {}\n".format(str(hyper_limit -1))
+		self.p2text = self.p2text + "Queries for blocks before {} will not be found\n".format(str(hyper_limit))
 		
 		self.l_text5 = wx.StaticText(self, -1, self.p2text)
 		self.l_text5.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		self.l_text5.SetForegroundColour("#08750A")		
 		self.l_text5.SetSize(self.l_text5.GetBestSize())
 		
-		self.l_text6 = wx.StaticText(self, -1)
+		hbox4 = wx.BoxSizer(wx.HORIZONTAL)
+		
+		self.l_text6 = wx.StaticText(self, -1, "")
 		self.l_text6.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL))
 		self.l_text6.SetForegroundColour("#08750A")		
 		self.l_text6.SetSize(self.l_text6.GetBestSize())
+		
+		self.l_text7 = hl.HyperLinkCtrl(self, -1, "")
+		self.l_text7.Bind(hl.EVT_HYPERLINK_LEFT, self.OnLeft)
+		self.l_text7.AutoBrowse(False)
+		self.l_text7.SetSize(self.l_text7.GetBestSize())
+		
+		self.l_text8 = hl.HyperLinkCtrl(self, -1, "")
+		self.l_text8.Bind(hl.EVT_HYPERLINK_LEFT, self.OnRight)
+		self.l_text8.AutoBrowse(False)
+		self.l_text8.SetSize(self.l_text8.GetBestSize())
+
+		hbox4.Add(self.l_text7, 0, wx.ALL|wx.LEFT, 2)
+		hbox4.Add(self.l_text6, 0, wx.ALL|wx.RIGHT, 2)
+		hbox4.Add(self.l_text8, 0, wx.ALL|wx.CENTER, 2)		
 
 		self.index = 0
 
@@ -692,7 +696,7 @@ class PageTwo(wx.Panel):
 		self.box2.Add(hbox2, 0, wx.ALL|wx.LEFT, 2)
 		self.box2.Add(hbox3, 0, wx.ALL|wx.LEFT, 2)
 		self.box2.Add(self.l_text5, 0, wx.ALL|wx.CENTER, 2)
-		self.box2.Add(self.l_text6, 0, wx.ALL|wx.CENTER, 2)
+		self.box2.Add(hbox4, 0, wx.ALL|wx.CENTER, 2)
 		self.box2.Add(self.list_ctrl, 0, wx.ALL|wx.EXPAND, 2)
 		
 		self.SetSizer(self.box2)
@@ -700,6 +704,7 @@ class PageTwo(wx.Panel):
 		self.timer1.Start(300 * 1000)
 
 	def OnSubmit(self, event):
+
 		myblock = str(self.lt1.GetValue())
 		logging.info("Ledger: Query for: {}".format(str(myblock)))
 		
@@ -724,6 +729,7 @@ class PageTwo(wx.Panel):
 				extext = "Success !! Transactions found for address: {}\n".format(myblock)
 				extext = extext + "Credits: {} | Debits: {} | Rewards: {} |".format(myxtions[0],myxtions[1],myxtions[2])
 				extext = extext + " Fees: {} | BALANCE: {}".format(myxtions[3],myxtions[4])
+				self.cleantxt()
 				
 				conn = sqlite3.connect('../static/ledger.db')
 				c = conn.cursor()
@@ -744,17 +750,27 @@ class PageTwo(wx.Panel):
 				
 				if not all:
 					self.l_text6.SetForegroundColour(wx.RED)
+					self.cleantxt()
 					extext = "Error !!! Nothing found for the address or block hash you entered"
 				else:
 					self.l_text6.SetForegroundColour("#08750A")
+					self.cleantxt()
 					extext = "Success !! Transactions found for block hash: {}".format(myblock)	
 
 		if my_type == 2:
 
 			if myblock == "0":
 				self.l_text6.SetForegroundColour(wx.RED)
+				self.cleantxt()
 				extext = "Error !!! Block, address or hash not found. Maybe you entered bad data or nothing at all?"
 				all = []
+			
+			if int(myblock) < hyper_limit:
+				self.l_text6.SetForegroundColour(wx.RED)
+				self.cleantxt()
+				extext = "Error !!! Block, address or hash not found. Maybe you entered bad data or nothing at all?"
+				all = []
+			
 			else:
 					
 				conn = sqlite3.connect('../static/ledger.db')
@@ -768,10 +784,21 @@ class PageTwo(wx.Panel):
 				
 			if not all:
 				self.l_text6.SetForegroundColour(wx.RED)
+				self.cleantxt()
 				extext = "Error !!! Block, address or hash not found. Maybe you entered bad data or nothing at all?"
 			else:
 				self.l_text6.SetForegroundColour("#08750A")
-				extext = "Success !! Transactions found for block: {}".format(myblock)					
+				self.cleantxt()
+				extext = "Transactions found for block {}".format(myblock)
+				
+				if int(myblock) > (hyper_limit):
+					self.l_text7.SetLabel("<< Previous ")
+					self.l_text7.SetToolTip(wx.ToolTip("Go to block {}".format(str(int(myblock) - 1))))
+				
+				if (int(myblock) + 1) < (self.mylatest[0] + 1):
+					self.l_text8.SetLabel("Next >>")
+					self.l_text8.SetToolTip(wx.ToolTip("Go to block {}".format(str(int(myblock) + 1))))
+				
 		
 		self.l_text6.SetLabel(extext)
 		self.box2.Layout()
@@ -820,6 +847,46 @@ class PageTwo(wx.Panel):
 		self.l_text5.SetLabel(self.p2text)
 		logging.info("Ledger: Latest block refresh")
 		self.timer1.Start(300 * 1000)
+		
+	def OnLeft(self, event):
+		currblock = str(self.lt1.GetValue())
+		if currblock.isdigit():
+			currblock = int(currblock)
+			prevblock = currblock - 1
+			if prevblock == hyper_limit or prevblock > hyper_limit:
+				self.lt1.SetValue(str(prevblock))
+				self.l_text7.SetLabel("<< Previous ")
+				self.OnSubmit(wx.EVT_BUTTON)
+			else:
+				self.lt1.SetValue(str(hyper_limit))
+				self.l_text7.SetLabel("")
+				self.l_text7.SetToolTip(wx.ToolTip(""))
+		else:
+			pass
+
+	def OnRight(self, event):
+		currblock = str(self.lt1.GetValue())
+		if currblock.isdigit():
+			currblock = int(currblock)
+			nextblock = currblock + 1
+			if nextblock < (self.mylatest[0] + 1):
+				self.lt1.SetValue(str(nextblock))
+				self.l_text8.SetLabel("Next >>")
+				self.OnSubmit(wx.EVT_BUTTON)
+			else:
+				self.lt1.SetValue(str(self.mylatest[0]))
+				self.l_text8.SetLabel("")
+				self.l_text8.SetToolTip(wx.ToolTip(""))
+		else:
+			pass
+
+	def cleantxt(self):
+		self.l_text7.SetLabel("")
+		self.l_text7.SetToolTip(wx.ToolTip(""))
+		self.l_text8.SetLabel("")
+		self.l_text8.SetToolTip(wx.ToolTip(""))
+		
+	
 
 class PageThree(wx.Panel):
 	def __init__(self, parent):
@@ -1211,7 +1278,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 0.42', 0)
+		statusbar.SetStatusText('Version 1.00', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		
@@ -1269,6 +1336,11 @@ class MainFrame(wx.Frame):
 		self.Close()
 
 if __name__ == "__main__":
-    app = wx.App()
-    MainFrame().Show()
-    app.MainLoop()
+
+	background_thread = Thread(target=buildminerdb)
+	background_thread.daemon = True
+	background_thread.start()
+	logging.info("Miner DB: Start Thread")
+	app = wx.App()
+	MainFrame().Show()
+	app.MainLoop()

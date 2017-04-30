@@ -49,10 +49,25 @@ The files should be placed into a folder called "tools" under the /bismuth folde
 
 If a folder doesn't already exist called "tools" you will need to create one.
 
+The windows installer executable will create the tools folder for you at C:\Program Files (x86)\Bismuth
+
 miners.db
+=========
 
 On first run, if there is no miners.db then a new one will be created.
 Once the update process is complete then click 'Refresh List' to display the new or latest list of miners.
+
+Sponsors (Web Edition Only)
+==========================
+
+Edit the sponsor.txt file as follows:
+
+address = <insert your the Bismuth address that will receive your payment>
+sponsors = <insert 1 to switch on sponsors or 0 to switch off>
+rate = <insert the number of blocks per Bismuth the sponsor advert will be displayed for>
+
+There are two sponsor spots on the main web landing page of the tools.
+
 
 Version 0.2 Improvements 21/03/2017
 
@@ -115,9 +130,16 @@ Version 0.43 Changes 27/04/2017 (web tools only)
 
 Note: Make sure you delete your existing miner.db file before you run this update of the tool
 
+Version 1.00 Changes 30/04/2017
+ 
+1. First production release
+2. Update of desktop edition
+3. Fix miner.db update in desktop edition
+4. Ledger query update.
+5. Windows installer executable
+
+Note: Make sure you delete your existing miner.db and spnsor.db files before you run this update of the tool
+
 Future Improvements:
 
-1. Deliver future executable releases using an installer program (version 0.5)
-2. Even better menus and menu content
-3. Opt-in advertising function - get paid in Bismuth after testing phase - Done
-4. RC1 version of web tools
+TBC
