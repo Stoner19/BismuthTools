@@ -2,13 +2,9 @@
 
 Tools for the Bismuth Cryptocurrency
 
-This repository contains tools I personally use for the Bismuth Cryptocurrency
+This repository contains tools for the Bismuth Cryptocurrency
 
 For license see LICENSE file
-
-The tool is intended for personal use.
-
-There is a web version based on webpy in the WebEdition folder
 
 See releases for pre-compiled versions
 
