@@ -1,5 +1,5 @@
 # Bismuth Tools Web Edition
-# version 1.00_web
+# version 1.01_web
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -123,9 +123,12 @@ def latest():
 	c.execute("SELECT * FROM transactions WHERE address = ? OR address = ? ORDER BY block_height DESC LIMIT 1;", ('Hypoblock','Hyperblock')) #or it takes the first
 	hyper_result = c.fetchall()
 	
-	c.close()	
+	c.close()
 	
-	hyper_limit = (hyper_result[0][0]) + 1
+	if not hyper_result:
+		hyper_limit = 1
+	else:
+		hyper_limit = (hyper_result[0][0]) + 1
 	
 	logging.info("Latest block queried: {}".format(str(db_block_height)))
 	logging.info("Hyper_Limit is: {}".format(str(hyper_limit)))

@@ -136,8 +136,14 @@ Version 1.00 Changes 30/04/2017
 4. Ledger query update.
 5. Windows installer executable
 
-Note: Make sure you delete your existing miner.db and spnsor.db files before you run this update of the tool
+Note: Make sure you delete your existing miner.db and sponsor.db files before you run this update of the tool
+
+Version 1.01 Changes 30/04/2017
+ 
+1. Fix ledger query to accomodate ledger.db with no hyperblock information
+
 
 Future Improvements:
 
-TBC
+1. Other Ledger Information page: to list hyperblock and query "keep" transactions
+2. Network information page
