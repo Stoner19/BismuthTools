@@ -1,5 +1,5 @@
 # Bismuth Tools Web Edition
-# version 1.01_web
+# version 1.02_web
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -197,6 +197,10 @@ def getvars(myaddress):
 			
 		miner_for = (temp_for - myadjust)
 		miner_for = miner_for/86400
+		
+		if miner_for == 0:
+			miner_for = 1		
+		
 		b_perday = b_count/miner_for
 		c_power = miner_for * 0.432
 		c_power = format(c_power, '.2f')
@@ -755,8 +759,8 @@ class ledgerquery:
 		plotter.append('</form>\n')
 		#plotter.append('</p>\n')
 		plotter.append('<p>The latest block: {} was found {} seconds ago</p>\n'.format(str(mylatest[0]),str(int(mylatest[1]))))
-		plotter.append('<p>The last Hyperblock was at block: {}</p>\n'.format(str(hyper_limit -1)))
-		plotter.append('<p>Queries for blocks before {} will not be found</p>\n'.format(str(hyper_limit -1)))
+		plotter.append('<p>The last Hyperblock was at block: {}</p>\n'.format(str(hyper_limit)))
+		plotter.append('<p>Queries for blocks before {} will not be found</p>\n'.format(str(hyper_limit)))
 		plotter.append('</body>\n')
 		plotter.append('</html>')
 		# Initial Form

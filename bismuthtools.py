@@ -1,5 +1,5 @@
 # Bismuth Tools
-# version 1.01
+# version 1.02
 # Copyright Maccaspacca 2017
 # Copyright Hclivess 2016 to 2017
 # Author Maccaspacca
@@ -39,9 +39,9 @@ def updatestatus(newstatus,newplace):
 	wx.PostEvent(statusbar,evt)
 					
 a_txt = "<table>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>1.01</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Version:</b></td><td bgcolor='#D0F7C3'>1.02</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Copyright:</b></td><td bgcolor='#D0F7C3'>Maccaspacca 2017, Hclivess 2016 to 2017</td></tr>"
-a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>1st May 2017</td></tr>"
+a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>Date Published:</b></td><td bgcolor='#D0F7C3'>7th May 2017</td></tr>"
 a_txt = a_txt + "<tr><td align='right' bgcolor='#DAF7A6'><b>License:</b></td><td bgcolor='#D0F7C3'>GPL-3.0</td></tr>"
 a_txt = a_txt + "</table>"
 
@@ -221,6 +221,10 @@ def getvars(myaddress):
 			
 		miner_for = (temp_for - myadjust)
 		miner_for = miner_for/86400
+		
+		if miner_for == 0:
+			miner_for = 1		
+		
 		b_perday = b_count/miner_for
 		c_power = miner_for * 0.432
 		c_power = format(c_power, '.2f')
@@ -1281,7 +1285,7 @@ class MainFrame(wx.Frame):
 		statusbar = self.CreateStatusBar()
 		statusbar.SetFieldsCount(3)
 		statusbar.SetStatusWidths([-1, -1, -3])
-		statusbar.SetStatusText('Version 1.01', 0)
+		statusbar.SetStatusText('Version 1.02', 0)
 		statusbar.SetStatusText('Miner.db update:', 1)
 		statusbar.SetStatusText('', 2)
 		

@@ -142,8 +142,14 @@ Version 1.01 Changes 30/04/2017
  
 1. Fix ledger query to accomodate ledger.db with no hyperblock information
 
+Version 1.02 Changes 07/05/2017
+ 
+1. Fix miner query for low block finders
+
 
 Future Improvements:
 
 1. Other Ledger Information page: to list hyperblock and query "keep" transactions
 2. Network information page
+3. Remove inaccurate miner information e.g. power usage as this is not relevant to production
+

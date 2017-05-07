@@ -1,7 +1,7 @@
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 0, 1, 0),
-    prodvers=(1, 0, 1, 0),
+    filevers=(1, 0, 2, 0),
+    prodvers=(1, 0, 2, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x4,
@@ -16,10 +16,10 @@ VSVersionInfo(
         u'040904B0',
         [StringStruct(u'CompanyName', u'Bismuth Cryptocurrency'),
         StringStruct(u'ProductName', u'BISMUTH TOOLS'),
-        StringStruct(u'ProductVersion', u'1, 0, 1, 0'),
+        StringStruct(u'ProductVersion', u'1, 0, 2, 0'),
         StringStruct(u'InternalName', u'BISMUTHTOOLS'),
         StringStruct(u'OriginalFilename', u'bismuthtools.exe'),
-        StringStruct(u'FileVersion', u'1, 0, 1, 0'),
+        StringStruct(u'FileVersion', u'1, 0, 2, 0'),
         StringStruct(u'FileDescription', u'Windows Executable'),
         StringStruct(u'LegalCopyright', u'2016, 2017 Hclivess, 2017 Maccaspacca,')])
       ]),
