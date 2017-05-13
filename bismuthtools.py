@@ -72,7 +72,7 @@ m_txt = m_txt + "</table>"
 
 def i_am_first(my_first,the_address):
 
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT MIN(block_height) FROM transactions WHERE openfield = ?;",(my_first,))
@@ -89,7 +89,7 @@ def i_am_first(my_first,the_address):
 		return False
 
 def checkmyname(myaddress):
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE address = ? AND recipient = ? AND amount > ? ORDER BY block_height ASC;",(myaddress,myaddress,"1"))
@@ -128,7 +128,7 @@ def checkmyname(myaddress):
 
 def latest():
 
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE reward != ? ORDER BY block_height DESC LIMIT 1;", ('0',)) #or it takes the first
@@ -141,7 +141,7 @@ def latest():
 	
 	global hyper_limit
 	
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE address = ? OR address = ? ORDER BY block_height DESC LIMIT 1;", ('Hypoblock','Hyperblock')) #or it takes the first
@@ -161,7 +161,7 @@ def latest():
 
 def zerocheck(zeroaddress):
 	
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT count(*) FROM transactions WHERE address = ? AND (reward != 0);",(zeroaddress,))
@@ -177,7 +177,7 @@ def zerocheck(zeroaddress):
 
 def getvars(myaddress):
 
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	
@@ -201,7 +201,7 @@ def getvars(myaddress):
 		b_perday = 0
 		c_power = 0.01
 	else:
-		conn = sqlite3.connect('../static/ledger.db')
+		conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 		c = conn.cursor()
 		c.execute("SELECT timestamp FROM transactions WHERE block_height BETWEEN ? and ? AND recipient = ? AND (reward != 0) ORDER BY block_height ASC;", (hyper_limit,b_max,myaddress))
 		timeall = c.fetchall()
@@ -265,7 +265,7 @@ def rebuildme():
 	time.sleep(2)
 
 	# Get mining addresses from ledgerdb
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT distinct recipient FROM transactions WHERE block_height > ? AND reward != 0;",(hyper_limit,))
@@ -338,7 +338,7 @@ checkstart()
 #////////////////////////////////////////////////////////////
 
 def refresh(testAddress):
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT sum(amount) FROM transactions WHERE recipient = ?;",(testAddress,))
@@ -416,7 +416,7 @@ def bgetvars(myaddress):
 
 def tgetvars(myblock,myamount,mytitle):
 
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 	c.execute("SELECT * FROM transactions WHERE block_height = ? AND amount = ?;", (myblock, myamount))
@@ -460,7 +460,7 @@ def wgetrans(thisaddress):
 	mempool.text_factory = str
 	m = mempool.cursor()
 
-	conn = sqlite3.connect('../static/ledger.db')
+	conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 	conn.text_factory = str
 	c = conn.cursor()
 
@@ -738,7 +738,7 @@ class PageTwo(wx.Panel):
 				extext = extext + " Fees: {} | BALANCE: {}".format(myxtions[3],myxtions[4])
 				self.cleantxt()
 				
-				conn = sqlite3.connect('../static/ledger.db')
+				conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 				c = conn.cursor()
 				c.execute("SELECT * FROM transactions WHERE address = ? OR recipient = ? ORDER BY block_height DESC;", (str(myblock),str(myblock)))
 
@@ -747,7 +747,7 @@ class PageTwo(wx.Panel):
 				c.close()
 			else:
 				
-				conn = sqlite3.connect('../static/ledger.db')
+				conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 				c = conn.cursor()
 				c.execute("SELECT * FROM transactions WHERE block_hash = ?;", (str(myblock),))
 
@@ -780,7 +780,7 @@ class PageTwo(wx.Panel):
 			
 			else:
 					
-				conn = sqlite3.connect('../static/ledger.db')
+				conn = sqlite3.connect(os.path.expanduser('~/Bismuth/static/ledger.db'))
 				c = conn.cursor()
 				c.execute("SELECT * FROM transactions WHERE block_height = ?;", (myblock,))
 
